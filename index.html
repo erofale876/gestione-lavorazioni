@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestione Lavorazioni</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #1a1208; --bg2: #211608; --bg3: #2a1c0a; --card: #1e1507;
+    --border: #3a2510; --border2: #4a3015;
+    --orange: #e8692a; --orange2: #ff7c3a;
+    --text: #d4c4a8; --text2: #a08060; --text3: #604030;
+    --mono: 'Share Tech Mono', monospace;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 14px; min-height: 100vh; }
+
+  .header { text-align: center; padding: 20px 16px 16px; border-bottom: 2px solid var(--orange); background: linear-gradient(180deg,#0d0902 0%,var(--bg) 100%); }
+  .header-title { font-size: 26px; font-weight: 700; color: var(--orange); letter-spacing: .12em; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .header-sub { font-size: 12px; color: var(--text2); letter-spacing: .06em; margin-top: 6px; }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; border-bottom: 2px solid var(--border2); background: var(--bg2); }
+  .tab-btn { padding: 14px 8px; text-align: center; cursor: pointer; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); background: none; border: none; border-bottom: 3px solid transparent; transition: color .15s, border-color .15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--orange); border-bottom: 3px solid var(--orange); background: rgba(232,105,42,.04); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .panel { display: none; } .panel.active { display: block; }
+
+  .section-card { background: var(--card); border: 1px solid var(--border2); border-radius: 4px; padding: 20px; margin-bottom: 16px; transition: border-color .2s; }
+  .section-card.editing { border-color: rgba(232,105,42,.5); }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--orange); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border2); display: flex; align-items: center; gap: 8px; }
+
+  .edit-banner { display: none; background: rgba(232,105,42,.1); border: 1px solid rgba(232,105,42,.35); border-radius: 3px; padding: 8px 14px; margin-bottom: 14px; font-size: 12px; color: var(--orange); align-items: center; gap: 8px; }
+  .edit-banner.show { display: flex; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 3px; padding: 10px 12px; color: var(--text); font-family: var(--mono); font-size: 13px; outline: none; transition: border-color .15s; -webkit-appearance: none; appearance: none; }
+  .form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a08060' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; cursor: pointer; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); background: #2e1c0a; }
+  .section-card.editing .form-input, .section-card.editing .form-select, .section-card.editing .form-textarea { border-color: rgba(232,105,42,.3); }
+  .form-input::placeholder { color: var(--text3); }
+  .form-textarea { resize: vertical; min-height: 72px; }
+
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+  .btn { padding: 12px; font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; border-radius: 3px; cursor: pointer; transition: all .15s; border: 1px solid var(--border2); }
+  .btn-temp { background: var(--bg3); color: var(--text2); }
+  .btn-temp:hover { border-color: var(--text2); color: var(--text); }
+  .btn-save { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .btn-save:hover { background: var(--orange2); border-color: var(--orange2); }
+  .btn-mod { background: #0c1e30; color: #60a8d8; border: 1px solid #1a3850; font-size: 11px; padding: 5px 10px; letter-spacing: .04em; font-family: var(--mono); font-weight: 700; border-radius: 3px; cursor: pointer; transition: all .15s; }
+  .btn-mod:hover { border-color: #60a8d8; }
+  .btn-del { background: #3a1010; color: #e05050; border: 1px solid #5a2020; font-size: 11px; padding: 5px 10px; letter-spacing: .04em; font-family: var(--mono); font-weight: 700; border-radius: 3px; cursor: pointer; transition: all .15s; }
+  .btn-del:hover { border-color: #e05050; }
+
+  .table-wrap { border: 1px solid var(--border2); border-radius: 3px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #120d04; border-bottom: 1px solid var(--border2); }
+  th { padding: 10px 12px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); text-align: left; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(232,105,42,.04); }
+  tbody tr.editing-row { background: rgba(232,105,42,.08); box-shadow: inset 3px 0 0 var(--orange); }
+  .td-main { color: var(--text); }
+  .empty-td { text-align: center; padding: 30px; color: var(--text3); font-style: italic; }
+  .td-actions { display: flex; gap: 6px; white-space: nowrap; }
+
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; padding: 2px 8px; border-radius: 2px; text-transform: uppercase; }
+  .s-contatto   { background: rgba(60,120,200,.15);  color: #6ab0f0;  border: 1px solid rgba(60,120,200,.3); }
+  .s-preventivo { background: rgba(200,160,40,.15);  color: #e0c060;  border: 1px solid rgba(200,160,40,.3); }
+  .s-lavori     { background: rgba(232,105,42,.15);  color: var(--orange); border: 1px solid rgba(232,105,42,.3); }
+  .s-consegnato { background: rgba(60,160,80,.15);   color: #60d080;  border: 1px solid rgba(60,160,80,.3); }
+  .s-fatturato  { background: rgba(120,80,160,.15);  color: #a080d0;  border: 1px solid rgba(120,80,160,.3); }
+
+  .prog-wrap { display: flex; align-items: center; gap: 8px; }
+  .prog-bar { flex: 1; height: 4px; background: var(--border2); border-radius: 2px; min-width: 60px; }
+  .prog-fill { height: 100%; border-radius: 2px; background: var(--orange); }
+  .prog-val { font-size: 11px; color: var(--text3); min-width: 32px; text-align: right; }
+  .total-bar { background: #120d04; border: 1px solid var(--border2); border-top: none; padding: 12px 16px; font-size: 14px; font-weight: 700; color: var(--orange); letter-spacing: .08em; text-transform: uppercase; }
+
+  .storico-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .s-card { background: var(--card); border: 1px solid var(--border2); border-radius: 4px; padding: 16px; transition: border-color .15s; }
+  .s-card:hover { border-color: var(--orange); }
+  .s-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .s-card-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .s-card-tipo { font-size: 11px; color: var(--text3); margin-bottom: 12px; }
+  .s-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .s-stat { background: var(--bg3); border-radius: 3px; padding: 8px 10px; }
+  .s-stat-lbl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 3px; }
+  .s-stat-val { font-size: 14px; font-weight: 700; color: var(--text); }
+  .s-stat-val.o { color: var(--orange); }
+
+  /* Loading overlay */
+  .loading { position: fixed; inset: 0; background: rgba(10,8,4,.85); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 16px; }
+  .loading.hidden { display: none; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border2); border-top-color: var(--orange); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 12px; color: var(--text2); letter-spacing: .1em; }
+
+  #notif { position: fixed; bottom: 20px; right: 20px; background: var(--card); border: 1px solid var(--orange); border-radius: 4px; padding: 10px 18px; font-size: 12px; font-family: var(--mono); color: var(--orange); letter-spacing: .04em; opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; pointer-events: none; z-index: 999; }
+  #notif.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">CONNESSIONE AL DATABASE...</div>
+</div>
+
+<div class="header">
+  <div class="header-title">⚙ GESTIONE LAVORAZIONI</div>
+  <div class="header-sub">Contatti · Produzione · Incassi · Storico</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('contatti',this)">📋 CONTATTI</button>
+  <button class="tab-btn" onclick="switchTab('produzione',this)">🔥 PRODUZIONE</button>
+  <button class="tab-btn" onclick="switchTab('incassi',this)">💰 INCASSI</button>
+  <button class="tab-btn" onclick="switchTab('storico',this)">📅 STORICO</button>
+</div>
+
+<main>
+
+<!-- CONTATTI -->
+<div id="panel-contatti" class="panel active">
+  <div class="section-card" id="c-card">
+    <div class="section-title">📋 CONTATTI</div>
+    <div class="edit-banner" id="c-banner">✎ &nbsp;Modalità modifica — stai aggiornando un contatto esistente</div>
+    <input type="hidden" id="c-eid">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Data inserimento</label><input type="date" id="c-data" class="form-input"></div>
+      <div class="form-group"><label class="form-label">Nome cliente</label><input type="text" id="c-cliente" class="form-input" placeholder="Es. Rossi Mario"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Tipo di lavoro</label>
+        <select id="c-tipo" class="form-select">
+          <option value="">-- Seleziona --</option>
+          <option>Falegnameria</option><option>Pavimentazione</option><option>Pittura</option>
+          <option>Impianto idraulico</option><option>Impianto elettrico</option>
+          <option>Ristrutturazione</option><option>Muratura</option><option>Carpenteria</option>
+          <option>Infissi</option><option>Altro</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Valore stimato (€)</label><input type="number" id="c-valore" class="form-input" placeholder="0.00" step="0.01" min="0"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group"><label class="form-label">Stato</label>
+        <select id="c-stato" class="form-select">
+          <option>Contatto</option><option>Preventivo</option><option>Lavori in corso</option><option>Consegnato</option><option>Fatturato</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-temp" onclick="resetC()">ANNULLA</button>
+      <button class="btn btn-save" id="c-sbtn" onclick="saveC()">SALVA</button>
+    </div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Tipo</th><th>Valore</th><th>Stato</th><th></th></tr></thead><tbody id="tbody-c"></tbody></table></div>
+</div>
+
+<!-- PRODUZIONE -->
+<div id="panel-produzione" class="panel">
+  <div class="section-card" id="p-card">
+    <div class="section-title">🔥 PRODUZIONE</div>
+    <div class="edit-banner" id="p-banner">✎ &nbsp;Modalità modifica — stai aggiornando una lavorazione esistente</div>
+    <input type="hidden" id="p-eid">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Data lavorazione</label><input type="date" id="p-data" class="form-input"></div>
+      <div class="form-group"><label class="form-label">Commessa</label><select id="p-commessa" class="form-select"><option value="">-- Seleziona --</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Operatore</label>
+        <select id="p-operatore" class="form-select">
+          <option value="">-- Seleziona --</option>
+          <option>Marco</option><option>Luca</option><option>Giovanni</option><option>Antonio</option><option>Roberto</option><option>Stefano</option><option>Altro</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Ore lavorate</label><input type="number" id="p-ore" class="form-input" placeholder="0" step="0.5" min="0"></div>
+    </div>
+    <div class="form-row full"><div class="form-group"><label class="form-label">% Avanzamento</label><input type="number" id="p-av" class="form-input" placeholder="0" min="0" max="100"></div></div>
+    <div class="form-row full"><div class="form-group"><label class="form-label">Note critiche</label><textarea id="p-note" class="form-textarea" placeholder="Es. Legno difettoso..."></textarea></div></div>
+    <div class="btn-row">
+      <button class="btn btn-temp" onclick="resetP()">ANNULLA</button>
+      <button class="btn btn-save" id="p-sbtn" onclick="saveP()">SALVA</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr><th>Data</th><th>Commessa</th><th>Operatore</th><th>Ore</th><th>Avanzamento</th><th>Note</th><th></th></tr></thead><tbody id="tbody-p"></tbody></table>
+    <div class="total-bar">Totale ore: <span id="tot-ore">0.0</span>h</div>
+  </div>
+</div>
+
+<!-- INCASSI -->
+<div id="panel-incassi" class="panel">
+  <div class="section-card" id="i-card">
+    <div class="section-title">💰 USCITE / INCASSI</div>
+    <div class="edit-banner" id="i-banner">✎ &nbsp;Modalità modifica — stai aggiornando un incasso esistente</div>
+    <input type="hidden" id="i-eid">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Data registrazione</label><input type="date" id="i-data" class="form-input"></div>
+      <div class="form-group"><label class="form-label">Commessa</label><select id="i-commessa" class="form-select"><option value="">-- Seleziona --</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Lavoro finito?</label>
+        <select id="i-finito" class="form-select"><option value="false">No</option><option value="true">Sì</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Data consegna prevista</label><input type="date" id="i-consegna" class="form-input"></div>
+    </div>
+    <div class="form-row full"><div class="form-group"><label class="form-label">Incasso (€)</label><input type="number" id="i-incasso" class="form-input" placeholder="0.00" step="0.01" min="0"></div></div>
+    <div class="btn-row">
+      <button class="btn btn-temp" onclick="resetI()">ANNULLA</button>
+      <button class="btn btn-save" id="i-sbtn" onclick="saveI()">SALVA</button>
+    </div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th>Data</th><th>Commessa</th><th>Finito</th><th>Consegna</th><th>Incasso</th><th></th></tr></thead><tbody id="tbody-i"></tbody></table></div>
+</div>
+
+<!-- STORICO -->
+<div id="panel-storico" class="panel">
+  <div id="storico-grid" class="storico-grid"></div>
+  <div id="storico-empty" style="display:none;text-align:center;padding:60px;color:var(--text3);font-style:italic">Nessuna commessa</div>
+</div>
+
+</main>
+<div id="notif"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPA_URL = 'https://uyzfhilwtikrjqgylxwg.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5emZoaWx3dGlrcmpxZ3lseHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTYwNDcsImV4cCI6MjA5MDg5MjA0N30._tmP4XpZnK9Wmc3AkkZd52hM_xrmMHIK2EjGTB3xYfQ';
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+// ── Helpers ──
+const fmt = n => Number(n||0).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today = () => new Date().toISOString().slice(0,10);
+const pillCls = s => ({'Contatto':'s-contatto','Preventivo':'s-preventivo','Lavori in corso':'s-lavori','Consegnato':'s-consegnato','Fatturato':'s-fatturato'}[s]||'s-contatto');
+function notify(m){const n=document.getElementById('notif');n.textContent='✓ '+m;n.classList.add('show');clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('show'),2200);}
+function loading(on){document.getElementById('loading').classList.toggle('hidden',!on);}
+
+function setEditMode(prefix,isEdit){
+  document.getElementById(prefix+'-card').classList.toggle('editing',isEdit);
+  document.getElementById(prefix+'-banner').classList.toggle('show',isEdit);
+  document.getElementById(prefix+'-sbtn').textContent = isEdit ? 'AGGIORNA' : 'SALVA';
+  if(!isEdit) document.querySelectorAll('#tbody-'+prefix+' tr.editing-row').forEach(r=>r.classList.remove('editing-row'));
+}
+function highlightRow(tbodyId,id){
+  const r=document.querySelector('#'+tbodyId+' tr[data-id="'+id+'"]');
+  if(r) r.classList.add('editing-row');
+}
+
+// ── Init ──
+async function init(){
+  ['c-data','p-data','i-data'].forEach(id=>document.getElementById(id).value=today());
+  await renderC();
+  loading(false);
+}
+
+// ── Tab switch ──
+window.switchTab = async (name,el)=>{
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='produzione'){await fillCommesse('p-commessa');await renderP();}
+  if(name==='incassi'){await fillCommesse('i-commessa');await renderI();}
+  if(name==='storico') await renderStorico();
+};
+
+async function fillCommesse(selId){
+  const {data}=await sb.from('contatti').select('id,cliente,tipo_lavoro').order('cliente');
+  const cur = document.getElementById(selId).value;
+  document.getElementById(selId).innerHTML='<option value="">-- Seleziona --</option>'+
+    (data||[]).map(r=>`<option value="${r.id}">${r.cliente} – ${r.tipo_lavoro}</option>`).join('');
+  if(cur) document.getElementById(selId).value=cur;
+}
+
+// ── CONTATTI ──
+window.resetC = ()=>{
+  document.getElementById('c-eid').value='';
+  document.getElementById('c-data').value=today();
+  document.getElementById('c-cliente').value='';
+  document.getElementById('c-tipo').value='';
+  document.getElementById('c-valore').value='';
+  document.getElementById('c-stato').value='Contatto';
+  setEditMode('c',false);
+};
+
+window.editC = async (id)=>{
+  const {data}=await sb.from('contatti').select('*').eq('id',id).single();
+  document.getElementById('c-eid').value=data.id;
+  document.getElementById('c-data').value=data.data;
+  document.getElementById('c-cliente').value=data.cliente;
+  document.getElementById('c-tipo').value=data.tipo_lavoro;
+  document.getElementById('c-valore').value=data.valore;
+  document.getElementById('c-stato').value=data.stato;
+  setEditMode('c',true);
+  await renderC();
+  highlightRow('tbody-c',id);
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+window.saveC = async ()=>{
+  const eid=document.getElementById('c-eid').value;
+  const data=document.getElementById('c-data').value;
+  const cliente=document.getElementById('c-cliente').value.trim();
+  const tipo_lavoro=document.getElementById('c-tipo').value;
+  const valore=parseFloat(document.getElementById('c-valore').value)||0;
+  const stato=document.getElementById('c-stato').value;
+  if(!data||!cliente||!tipo_lavoro){alert('Compila data, cliente e tipo di lavoro');return;}
+  loading(true);
+  if(eid){
+    await sb.from('contatti').update({data,cliente,tipo_lavoro,valore,stato}).eq('id',parseInt(eid));
+    notify('Contatto aggiornato');
+  } else {
+    await sb.from('contatti').insert({data,cliente,tipo_lavoro,valore,stato});
+    notify('Contatto salvato');
+  }
+  resetC();await renderC();loading(false);
+};
+
+window.delC = async (id)=>{
+  if(!confirm('Eliminare questo contatto e tutti i dati collegati?'))return;
+  loading(true);
+  await sb.from('contatti').delete().eq('id',id);
+  notify('Contatto eliminato');resetC();await renderC();loading(false);
+};
+
+async function renderC(){
+  const {data}=await sb.from('contatti').select('*').order('data',{ascending:false});
+  const tb=document.getElementById('tbody-c');
+  if(!data||!data.length){tb.innerHTML='<tr><td colspan="6" class="empty-td">Nessun contatto</td></tr>';return;}
+  tb.innerHTML=data.map(r=>`<tr data-id="${r.id}">
+    <td class="td-main">${r.data}</td>
+    <td class="td-main">${r.cliente}</td>
+    <td>${r.tipo_lavoro}</td>
+    <td>€ ${fmt(r.valore)}</td>
+    <td><span class="pill ${pillCls(r.stato)}">${r.stato}</span></td>
+    <td><div class="td-actions">
+      <button class="btn-mod" onclick="editC(${r.id})">✎ Modifica</button>
+      <button class="btn-del" onclick="delC(${r.id})">✕ Elimina</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+// ── PRODUZIONE ──
+window.resetP = ()=>{
+  document.getElementById('p-eid').value='';
+  document.getElementById('p-data').value=today();
+  document.getElementById('p-commessa').value='';
+  document.getElementById('p-operatore').value='';
+  document.getElementById('p-ore').value='';
+  document.getElementById('p-av').value='';
+  document.getElementById('p-note').value='';
+  setEditMode('p',false);
+};
+
+window.editP = async (id)=>{
+  await fillCommesse('p-commessa');
+  const {data}=await sb.from('produzione').select('*').eq('id',id).single();
+  document.getElementById('p-eid').value=data.id;
+  document.getElementById('p-data').value=data.data;
+  document.getElementById('p-commessa').value=data.contatto_id;
+  document.getElementById('p-operatore').value=data.operatore;
+  document.getElementById('p-ore').value=data.ore_lavorate;
+  document.getElementById('p-av').value=data.avanzamento;
+  document.getElementById('p-note').value=data.note||'';
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-produzione').classList.add('active');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  setEditMode('p',true);
+  await renderP();
+  highlightRow('tbody-p',id);
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+window.saveP = async ()=>{
+  const eid=document.getElementById('p-eid').value;
+  const data=document.getElementById('p-data').value;
+  const contatto_id=document.getElementById('p-commessa').value;
+  const operatore=document.getElementById('p-operatore').value;
+  const ore_lavorate=parseFloat(document.getElementById('p-ore').value)||0;
+  const avanzamento=parseInt(document.getElementById('p-av').value)||0;
+  const note=document.getElementById('p-note').value;
+  if(!data||!contatto_id||!operatore){alert('Compila data, commessa e operatore');return;}
+  loading(true);
+  if(eid){
+    await sb.from('produzione').update({data,contatto_id:parseInt(contatto_id),operatore,ore_lavorate,avanzamento,note}).eq('id',parseInt(eid));
+    notify('Lavorazione aggiornata');
+  } else {
+    await sb.from('produzione').insert({data,contatto_id:parseInt(contatto_id),operatore,ore_lavorate,avanzamento,note});
+    notify('Lavorazione salvata');
+  }
+  resetP();await renderP();loading(false);
+};
+
+window.delP = async (id)=>{
+  loading(true);
+  await sb.from('produzione').delete().eq('id',id);
+  notify('Eliminato');resetP();await renderP();loading(false);
+};
+
+async function renderP(){
+  const {data}=await sb.from('produzione').select('*,contatti(cliente,tipo_lavoro)').order('data',{ascending:false});
+  const totOre=(data||[]).reduce((s,r)=>s+Number(r.ore_lavorate||0),0);
+  document.getElementById('tot-ore').textContent=totOre.toFixed(1);
+  const tb=document.getElementById('tbody-p');
+  if(!data||!data.length){tb.innerHTML='<tr><td colspan="7" class="empty-td">Nessuna lavorazione</td></tr>';return;}
+  tb.innerHTML=data.map(r=>`<tr data-id="${r.id}">
+    <td class="td-main">${r.data}</td>
+    <td>${r.contatti?.cliente||'—'}<br><span style="font-size:11px;color:var(--text3)">${r.contatti?.tipo_lavoro||''}</span></td>
+    <td>${r.operatore}</td>
+    <td>${r.ore_lavorate}h</td>
+    <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${r.avanzamento}%"></div></div><div class="prog-val">${r.avanzamento}%</div></div></td>
+    <td style="font-size:12px;color:var(--text3);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.note||'—'}</td>
+    <td><div class="td-actions">
+      <button class="btn-mod" onclick="editP(${r.id})">✎ Modifica</button>
+      <button class="btn-del" onclick="delP(${r.id})">✕ Elimina</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+// ── INCASSI ──
+window.resetI = ()=>{
+  document.getElementById('i-eid').value='';
+  document.getElementById('i-data').value=today();
+  document.getElementById('i-commessa').value='';
+  document.getElementById('i-finito').value='false';
+  document.getElementById('i-consegna').value='';
+  document.getElementById('i-incasso').value='';
+  setEditMode('i',false);
+};
+
+window.editI = async (id)=>{
+  await fillCommesse('i-commessa');
+  const {data}=await sb.from('uscite').select('*').eq('id',id).single();
+  document.getElementById('i-eid').value=data.id;
+  document.getElementById('i-data').value=data.data;
+  document.getElementById('i-commessa').value=data.contatto_id;
+  document.getElementById('i-finito').value=String(data.finito);
+  document.getElementById('i-consegna').value=data.data_consegna||'';
+  document.getElementById('i-incasso').value=data.incasso;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-incassi').classList.add('active');
+  document.querySelectorAll('.tab-btn')[2].classList.add('active');
+  setEditMode('i',true);
+  await renderI();
+  highlightRow('tbody-i',id);
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+window.saveI = async ()=>{
+  const eid=document.getElementById('i-eid').value;
+  const data=document.getElementById('i-data').value;
+  const contatto_id=document.getElementById('i-commessa').value;
+  const finito=document.getElementById('i-finito').value==='true';
+  const data_consegna=document.getElementById('i-consegna').value||null;
+  const incasso=parseFloat(document.getElementById('i-incasso').value)||0;
+  if(!data||!contatto_id){alert('Compila data e commessa');return;}
+  loading(true);
+  if(eid){
+    await sb.from('uscite').update({data,contatto_id:parseInt(contatto_id),finito,data_consegna,incasso}).eq('id',parseInt(eid));
+    notify('Incasso aggiornato');
+  } else {
+    await sb.from('uscite').insert({data,contatto_id:parseInt(contatto_id),finito,data_consegna,incasso});
+    notify('Incasso salvato');
+  }
+  resetI();await renderI();loading(false);
+};
+
+window.delI = async (id)=>{
+  loading(true);
+  await sb.from('uscite').delete().eq('id',id);
+  notify('Eliminato');resetI();await renderI();loading(false);
+};
+
+async function renderI(){
+  const {data}=await sb.from('uscite').select('*,contatti(cliente,tipo_lavoro)').order('data',{ascending:false});
+  const tb=document.getElementById('tbody-i');
+  if(!data||!data.length){tb.innerHTML='<tr><td colspan="6" class="empty-td">Nessun incasso</td></tr>';return;}
+  tb.innerHTML=data.map(r=>`<tr data-id="${r.id}">
+    <td class="td-main">${r.data}</td>
+    <td>${r.contatti?.cliente||'—'}<br><span style="font-size:11px;color:var(--text3)">${r.contatti?.tipo_lavoro||''}</span></td>
+    <td>${r.finito?'<span class="pill s-consegnato">Sì</span>':'<span class="pill s-contatto">No</span>'}</td>
+    <td>${r.data_consegna||'—'}</td>
+    <td style="color:var(--orange);font-weight:700">€ ${fmt(r.incasso)}</td>
+    <td><div class="td-actions">
+      <button class="btn-mod" onclick="editI(${r.id})">✎ Modifica</button>
+      <button class="btn-del" onclick="delI(${r.id})">✕ Elimina</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+// ── STORICO ──
+async function renderStorico(){
+  const {data:contatti}=await sb.from('contatti').select('*');
+  const {data:prod}=await sb.from('produzione').select('contatto_id,ore_lavorate,avanzamento');
+  const {data:usc}=await sb.from('uscite').select('contatto_id,incasso');
+  const grid=document.getElementById('storico-grid');
+  const empty=document.getElementById('storico-empty');
+  if(!contatti||!contatti.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=contatti.map(c=>{
+    const cp=prod?.filter(p=>p.contatto_id===c.id)||[];
+    const cu=usc?.filter(u=>u.contatto_id===c.id)||[];
+    const ore=cp.reduce((s,r)=>s+Number(r.ore_lavorate||0),0);
+    const av=cp.length?Math.max(...cp.map(r=>r.avanzamento||0)):0;
+    const inc=cu.reduce((s,r)=>s+Number(r.incasso||0),0);
+    return `<div class="s-card">
+      <div class="s-card-head"><div class="s-card-name">${c.cliente}</div><span class="pill ${pillCls(c.stato)}">${c.stato}</span></div>
+      <div class="s-card-tipo">${c.tipo_lavoro}</div>
+      <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${av}%"></div></div><div class="prog-val">${av}%</div></div>
+      <div class="s-stats">
+        <div class="s-stat"><div class="s-stat-lbl">Stimato</div><div class="s-stat-val">€${fmt(c.valore)}</div></div>
+        <div class="s-stat"><div class="s-stat-lbl">Incassato</div><div class="s-stat-val o">€${fmt(inc)}</div></div>
+        <div class="s-stat"><div class="s-stat-lbl">Ore tot.</div><div class="s-stat-val">${ore.toFixed(1)}h</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>
