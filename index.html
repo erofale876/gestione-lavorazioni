@@ -123,8 +123,10 @@
         } else {
             let id = parseInt(document.getElementById('p-select').value);
             let idx = db.findIndex(x=>x.id===id);
-            db[idx].operatore = document.getElementById('p-op').value;
-            db[idx].misure = document.getElementById('p-misure').value;
+            if(idx !== -1) {
+                db[idx].operatore = document.getElementById('p-op').value;
+                db[idx].misure = document.getElementById('p-misure').value;
+            }
         }
         localStorage.setItem('fale_db_v2', JSON.stringify(db));
         alert("Dati salvati correttamente");
