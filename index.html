@@ -1,385 +1,250 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestione Lavorazioni</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
---bg: #1a1208; --bg2: #211608; --bg3: #2a1c0a; --card: #1e1507;
---border: #3a2510; --border2: #4a3015;
---orange: #e8692a; --orange2: #ff7c3a;
---text: #d4c4a8; --text2: #a08060; --text3: #604030;
---mono: 'Share Tech Mono', monospace;
-}
-body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 14px; min-height: 100vh; }
-.header { text-align: center; padding: 20px 16px 16px; border-bottom: 2px solid var(--orange); background: linear-gradient(180deg,#0d0902 0%,var(--bg) 100%); }
-.header-title { font-size: 26px; font-weight: 700; color: var(--orange); letter-spacing: .12em; text-transform: uppercase; }
-.header-sub { font-size: 12px; color: var(--text2); letter-spacing: .06em; margin-top: 6px; }
-.tabs { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; border-bottom: 2px solid var(--border2); background: var(--bg2); }
-.tab-btn { padding: 14px 8px; cursor: pointer; font-family: var(--mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text2); background: none; border: none; border-bottom: 3px solid transparent; }
-.tab-btn:hover { color: var(--text); }
-.tab-btn.active { color: var(--orange); border-bottom: 3px solid var(--orange); background: rgba(232,105,42,.04); }
-main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
-.panel { display: none; } .panel.active { display: block; }
-.section-card { background: var(--card); border: 1px solid var(--border2); border-radius: 4px; padding: 20px; margin-bottom: 16px; }
-.section-card.editing { border-color: rgba(232,105,42,.5); }
-.section-title { font-size: 14px; font-weight: 700; color: var(--orange); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border2); }
-.edit-banner { display: none; background: rgba(232,105,42,.1); border: 1px solid rgba(232,105,42,.35); border-radius: 3px; padding: 8px 14px; margin-bottom: 14px; font-size: 12px; color: var(--orange); }
-.edit-banner.show { display: block; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-.form-row.full { grid-template-columns: 1fr; }
-.form-group { display: flex; flex-direction: column; gap: 5px; }
-.form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text2); }
-.form-input, .form-select, .form-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 3px; padding: 10px 12px; color: var(--text); font-family: var(--mono); font-size: 13px; }
-.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); background: #2e1c0a; }
-.form-textarea { resize: vertical; min-height: 72px; }
-.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
-.btn { padding: 12px; font-family: var(--mono); font-size: 13px; font-weight: 700; text-transform: uppercase; border-radius: 3px; cursor: pointer; border: 1px solid var(--border2); }
-.btn-temp { background: var(--bg3); color: var(--text2); }
-.btn-temp:hover { border-color: var(--text2); color: var(--text); }
-.btn-save { background: var(--orange); color: #fff; border-color: var(--orange); }
-.btn-save:hover { background: var(--orange2); }
-.btn-mod { background: #0c1e30; color: #60a8d8; border: 1px solid #1a3850; font-size: 11px; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-.btn-del { background: #3a1010; color: #e05050; border: 1px solid #5a2020; font-size: 11px; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-.btn-pdf { background: #1a2a40; color: #70b0e8; border: 1px solid #2a4060; font-size: 10px; padding: 6px 10px; border-radius: 3px; cursor: pointer; }
-.table-wrap { border: 1px solid var(--border2); border-radius: 3px; overflow: hidden; }
-table { width: 100%; border-collapse: collapse; }
-thead tr { background: #120d04; border-bottom: 1px solid var(--border2); }
-th { padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--orange); text-align: left; }
-td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 13px; }
-.pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 2px; text-transform: uppercase; }
-.s-contatto { background: rgba(60,120,200,.15); color: #6ab0f0; }
-.s-preventivo { background: rgba(200,160,40,.15); color: #e0c060; }
-.s-lavori { background: rgba(232,105,42,.15); color: var(--orange); }
-.s-consegnato { background: rgba(60,160,80,.15); color: #60d080; }
-.s-fatturato { background: rgba(120,80,160,.15); color: #a080d0; }
-.prog-wrap { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
-.prog-bar { flex: 1; height: 6px; background: var(--border2); border-radius: 3px; }
-.prog-fill { height: 100%; border-radius: 3px; background: var(--orange); }
-.prog-val { font-size: 11px; color: var(--text2); }
-.total-bar { background: #120d04; border: 1px solid var(--border2); border-top: none; padding: 12px 16px; font-size: 14px; font-weight: 700; color: var(--orange); }
-.storico-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
-.s-card { background: var(--card); border: 1px solid var(--border2); border-radius: 4px; padding: 16px; }
-.s-card:hover { border-color: var(--orange); }
-.s-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.s-card-name { font-size: 16px; font-weight: 700; color: var(--text); }
-.s-card-tipo { font-size: 12px; color: var(--text3); margin-bottom: 12px; }
-.s-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
-.s-stat { background: var(--bg3); border-radius: 3px; padding: 8px 10px; }
-.s-stat-lbl { font-size: 10px; text-transform: uppercase; color: var(--text3); margin-bottom: 3px; }
-.s-stat-val { font-size: 13px; font-weight: 700; color: var(--text); }
-.s-card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
-.loading { position: fixed; inset: 0; background: rgba(10,8,4,.85); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 16px; }
-.loading.hidden { display: none; }
-.spinner { width: 36px; height: 36px; border: 3px solid var(--border2); border-top-color: var(--orange); border-radius: 50%; animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-#notif { position: fixed; bottom: 20px; right: 20px; background: var(--card); border: 1px solid var(--orange); border-radius: 4px; padding: 10px 18px; font-size: 12px; color: var(--orange); opacity: 0; transition: opacity .2s; z-index: 999; pointer-events: none; }
-#notif.show { opacity: 1; }
-@media print { body { background: white; color: black; } .header, .tabs, .btn, .loading, .edit-banner, .btn-row, #notif, .td-actions, .s-card-actions { display: none !important; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestione Lavorazioni - Falegnameria</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #34495e; --accent: #e67e22; --light: #ecf0f1; --success: #27ae60; --danger: #e74c3c; --warning: #f1c40f; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--light); margin: 0; padding-bottom: 70px; }
+        .header { background: var(--primary); color: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-tabs { display: flex; background: white; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid #ddd; }
+        .tab { flex: 1; padding: 15px 5px; text-align: center; cursor: pointer; font-weight: bold; color: var(--secondary); font-size: 14px; }
+        .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); background: #f9f9f9; }
+        .container { padding: 15px; max-width: 800px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--primary); }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-print-gen { background: #d35400; color: white; margin-bottom: 15px; }
+        .btn-row { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-small { flex: 1; padding: 8px 2px; font-size: 11px; min-width: 70px; }
+        .btn-edit { background: var(--warning); color: #000; }
+        .btn-sint { background: #3498db; color: white; }
+        .btn-comp { background: #2980b9; color: white; }
+        .btn-del { background: var(--danger); color: white; }
+        .item-card { background: white; border-left: 5px solid var(--accent); padding: 12px; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
+        .item-header { font-weight: bold; font-size: 16px; margin-bottom: 5px; color: var(--primary); }
+        .item-details { font-size: 13px; color: #666; line-height: 1.4; }
+        .hidden { display: none; }
+        /* Modal Modifica */
+        #editModal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; display:none; justify-content:center; align-items:center; }
+        .modal-content { background:white; width:90%; max-width:500px; padding:20px; border-radius:10px; max-height:90vh; overflow-y:auto; }
+    </style>
 </head>
 <body>
-<div class="loading" id="loading">
-<div class="spinner"></div>
-<div class="loading-text">CONNESSIONE AL DATABASE...</div>
-</div>
-<div id="notif"></div>
 
 <div class="header">
-<div class="header-title">■ GESTIONE LAVORAZIONI</div>
-<div class="header-sub">Falegnameria Desantis · Registro Professionale</div>
+    <h1 style="margin:0; font-size: 20px;">Gestione Lavorazioni Desantis</h1>
 </div>
 
-<div class="tabs">
-<button class="tab-btn active" onclick="switchTab('contatti',this)">■ CONTATTI</button>
-<button class="tab-btn" onclick="switchTab('produzione',this)">■ PRODUZIONE</button>
-<button class="tab-btn" onclick="switchTab('incassi',this)">■ INCASSI</button>
-<button class="tab-btn" onclick="switchTab('storico',this)">■ STORICO</button>
+<div class="nav-tabs">
+    <div class="tab active" onclick="showTab('contatti')">CONTATTI</div>
+    <div class="tab" onclick="showTab('produzione')">PRODUZIONE</div>
+    <div class="tab" onclick="showTab('storico')">STORICO</div>
 </div>
 
-<main>
-<div id="panel-contatti" class="panel active">
-    <div class="section-card" id="c-card">
-        <div class="section-title">■ NUOVO CONTATTO</div>
-        <div class="edit-banner" id="c-banner">✎ Modalità modifica</div>
-        <input type="hidden" id="c-eid">
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Data inserimento</label><input type="date" id="c-data" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Nome cliente</label><input type="text" id="c-cliente" class="form-input" placeholder="Es. Rossi Mario"></div>
+<div id="tab-contatti" class="container tab-content">
+    <div class="card">
+        <h3>Nuovo Contatto</h3>
+        <div class="form-group">
+            <label>Cliente / Referente</label>
+            <input type="text" id="c-cliente" placeholder="Nome cliente">
         </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Tipo di lavorazione</label>
-                <select id="c-tipo" class="form-select">
-                    <option value="">-- Seleziona Lavorazione --</option>
-                    <option>Porte Interne</option>
-                    <option>Portoncino Ingresso</option>
-                    <option>Finestre / Infissi</option>
-                    <option>Persiane / Scuri</option>
-                    <option>Scale in legno</option>
-                    <option>Armadi su misura</option>
-                    <option>Cucina</option>
-                    <option>Mobili Bagno</option>
-                    <option>Restauro Mobili</option>
-                    <option>Riparazioni varie</option>
-                    <option>Altro</option>
-                </select>
-            </div>
-            <div class="form-group"><label class="form-label">Preventivo Stimato (€)</label><input type="number" id="c-valore" class="form-input" placeholder="0.00"></div>
+        <div class="form-group">
+            <label>Tipo Lavorazione</label>
+            <select id="c-lavoro">
+                <option value="Porte Interne">Porte Interne</option>
+                <option value="Finestre">Finestre</option>
+                <option value="Persiane">Persiane</option>
+                <option value="Scale in legno">Scale in legno</option>
+                <option value="Mobili su misura">Mobili su misura</option>
+                <option value="Riparazione">Riparazione</option>
+            </select>
         </div>
-        <div class="form-row full">
-            <div class="form-group"><label class="form-label">Stato Iniziale</label>
-                <select id="c-stato" class="form-select">
-                    <option>Contatto</option>
-                    <option>Preventivo</option>
-                    <option>Lavori in corso</option>
-                    <option>Consegnato</option>
-                    <option>Fatturato</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label>Telefono / Note</label>
+            <input type="text" id="c-note" placeholder="Recapito o info brevi">
         </div>
-        <div class="btn-row">
-            <button class="btn btn-temp" onclick="resetC()">ANNULLA</button>
-            <button class="btn btn-save" id="c-sbtn" onclick="saveC()">SALVA CONTATTO</button>
-        </div>
-    </div>
-    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Lavorazione</th><th>Valore</th><th>Stato</th><th></th></tr></thead><tbody id="tbody-c"></tbody></table></div>
-</div>
-
-<div id="panel-produzione" class="panel">
-    <div class="section-card" id="p-card">
-        <div class="section-title">■ REGISTRO GIORNALIERO PRODUZIONE</div>
-        <input type="hidden" id="p-eid">
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Data</label><input type="date" id="p-data" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Seleziona Cliente</label><select id="p-commessa" class="form-select"><option value="">-- Caricamento... --</option></select></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Cosa è stato fatto oggi?</label><input type="text" id="p-prodotto" class="form-input" placeholder="Es. Montaggio cerniere"></div>
-            <div class="form-group"><label class="form-label">Operatore</label>
-                <select id="p-operatore" class="form-select">
-                    <option value="">-- Seleziona --</option>
-                    <option>Titolare Desantis</option>
-                    <option>Dipendente Nazzareno</option>
-                    <option>Dipendente B</option>
-                    <option>Terzista con fattura</option>
-                    <option>Altro</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Ore impiegate</label><input type="number" id="p-ore" class="form-input" step="0.5"></div>
-            <div class="form-group"><label class="form-label">% Avanzamento Odierno</label><input type="number" id="p-av" class="form-input" placeholder="0-100"></div>
-        </div>
-        <div class="form-row full"><div class="form-group"><label class="form-label">Note Tecniche</label><textarea id="p-note" class="form-textarea"></textarea></div></div>
-        <div class="btn-row">
-            <button class="btn btn-temp" onclick="resetP()">ANNULLA</button>
-            <button class="btn btn-save" id="p-sbtn" onclick="saveP()">SALVA LAVORAZIONE</button>
-        </div>
-    </div>
-    <div class="table-wrap">
-        <table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Operatore</th><th>Ore</th><th>% Giorno</th><th>% Tot</th><th></th></tr></thead><tbody id="tbody-p"></tbody></table>
-        <div class="total-bar">Totale ore registrate: <span id="tot-ore">0.0</span>h</div>
+        <button class="btn-primary" onclick="salvaDato('contatti')">REGISTRA CONTATTO</button>
     </div>
 </div>
 
-<div id="panel-incassi" class="panel">
-    <div class="section-card">
-        <div class="section-title">■ STATO CONSEGNE E INCASSI</div>
-        <input type="hidden" id="i-eid">
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Data</label><input type="date" id="i-data" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Cliente</label><select id="i-commessa" class="form-select"></select></div>
+<div id="tab-produzione" class="container tab-content hidden">
+    <div class="card">
+        <h3>Dati Produzione</h3>
+        <div class="form-group">
+            <label>Seleziona Cliente (da Contatti)</label>
+            <select id="p-cliente-select"></select>
         </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Lavoro Terminato?</label><select id="i-finito" class="form-select"><option value="false">No</option><option value="true">Sì (Consegnato)</option></select></div>
-            <div class="form-group"><label class="form-label">Data Consegna Effettiva</label><input type="date" id="i-consegna" class="form-input"></div>
+        <div class="form-group">
+            <label>Operatore</label>
+            <select id="p-operatore">
+                <option value="Titolare Desantis">Titolare Desantis</option>
+                <option value="Dipendente Nazzareno">Dipendente Nazzareno</option>
+            </select>
         </div>
-        <div class="form-row full"><div class="form-group"><label class="form-label">Importo Incassato (€)</label><input type="number" id="i-incasso" class="form-input"></div></div>
-        <div class="btn-row">
-            <button class="btn btn-temp" onclick="resetI()">ANNULLA</button>
-            <button class="btn btn-save" id="i-sbtn" onclick="saveI()">REGISTRA INCASSO</button>
+        <div class="form-group">
+            <label>Misure / Dettagli Tecnici</label>
+            <textarea id="p-misure" rows="3" placeholder="Inserisci misure e materiali..."></textarea>
         </div>
+        <button class="btn-primary" onclick="salvaDato('produzione')">AVVIA PRODUZIONE</button>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Stato</th><th>Consegna</th><th>Incasso</th><th></th></tr></thead><tbody id="tbody-i"></tbody></table></div>
 </div>
 
-<div id="panel-storico" class="panel">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <div class="section-title" style="margin-bottom:0">■ RIEPILOGO GENERALE COMMESSE</div>
-        <button class="btn btn-save" onclick="printGenerale()" style="padding: 8px 16px;">⎙ STAMPA RAPPORTO GENERALE</button>
-    </div>
-    <div id="storico-grid" class="storico-grid"></div>
-    <div id="storico-empty" style="display:none;text-align:center;padding:60px;color:var(--text3)">Nessun dato in archivio</div>
+<div id="tab-storico" class="container tab-content hidden">
+    <button class="btn-print-gen" onclick="generaReportGenerale()">⎙ STAMPA RAPPORTO GENERALE</button>
+    <div id="lista-storico"></div>
 </div>
-</main>
 
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-const SUPA_URL = 'https://uyzfhilwtikrjqgylxwg.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5emZoaWx3dGlrcmpxZ3lseHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTYwNDcsImV4cCI6MjA5MDg5MjA0N30._tmP4XpZnK9Wmc3AkkZd52hM_xrmMHIK2EjGTB3xYfQ';
-const sb = createClient(SUPA_URL, SUPA_KEY);
+<div id="editModal">
+    <div class="modal-content">
+        <h3>Modifica Lavorazione</h3>
+        <input type="hidden" id="edit-id">
+        <div class="form-group"><label>Cliente</label><input type="text" id="edit-cliente"></div>
+        <div class="form-group">
+            <label>Lavorazione</label>
+            <select id="edit-lavoro">
+                <option value="Porte Interne">Porte Interne</option>
+                <option value="Finestre">Finestre</option>
+                <option value="Persiane">Persiane</option>
+                <option value="Scale in legno">Scale in legno</option>
+                <option value="Mobili su misura">Mobili su misura</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Operatore</label>
+            <select id="edit-operatore">
+                <option value="Titolare Desantis">Titolare Desantis</option>
+                <option value="Dipendente Nazzareno">Dipendente Nazzareno</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Misure/Note</label><textarea id="edit-misure" rows="4"></textarea></div>
+        <button class="btn-primary" onclick="confermaModifica()">SALVA MODIFICHE</button>
+        <button class="btn-del" style="margin-top:10px;" onclick="document.getElementById('editModal').style.display='none'">ANNULLA</button>
+    </div>
+</div>
 
-const fmt = n => Number(n||0).toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
-const today = () => new Date().toISOString().slice(0,10);
-const pillCls = s => ({'Contatto':'s-contatto','Preventivo':'s-preventivo','Lavori in corso':'s-lavori','Consegnato':'s-consegnato','Fatturato':'s-fatturato'}[s]||'s-contatto');
+<script>
+    let db = JSON.parse(localStorage.getItem('falegnameria_db')) || [];
 
-function notify(m){const n=document.getElementById('notif');n.textContent='✓ '+m;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2500);}
-function loading(on){document.getElementById('loading').classList.toggle('hidden',!on);}
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
+        if(tabName === 'produzione') caricaSelectClienti();
+        if(tabName === 'storico') renderStorico();
+    }
 
-async function init(){
-    ['c-data','p-data','i-data'].forEach(id=>document.getElementById(id).value=today());
-    await renderC();
-    loading(false);
-}
+    function salvaDato(tipo) {
+        let nuovo = { id: Date.now(), data: new Date().toLocaleDateString('it-IT') };
+        if(tipo === 'contatti') {
+            nuovo.cliente = document.getElementById('c-cliente').value;
+            nuovo.lavoro = document.getElementById('c-lavoro').value;
+            nuovo.misure = document.getElementById('c-note').value;
+            nuovo.operatore = "Da assegnare";
+        } else {
+            nuovo.cliente = document.getElementById('p-cliente-select').value;
+            nuovo.lavoro = "Vedi dettagli";
+            nuovo.misure = document.getElementById('p-misure').value;
+            nuovo.operatore = document.getElementById('p-operatore').value;
+        }
+        if(!nuovo.cliente) return alert("Inserire il nome cliente");
+        db.push(nuovo);
+        localStorage.setItem('falegnameria_db', JSON.stringify(db));
+        alert("Salvato con successo!");
+        showTab('storico');
+    }
 
-window.switchTab=async(name,el)=>{
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('panel-'+name).classList.add('active');
-    el.classList.add('active');
-    if(name==='produzione'){ await fillCommesse('p-commessa'); await renderP(); }
-    if(name==='incassi'){ await fillCommesse('i-commessa'); await renderI(); }
-    if(name==='storico') await renderStorico();
-};
+    function caricaSelectClienti() {
+        const sel = document.getElementById('p-cliente-select');
+        sel.innerHTML = db.map(i => `<option value="${i.cliente}">${i.cliente}</option>`).join('');
+    }
 
-async function fillCommesse(selId){
-    const {data}=await sb.from('contatti').select('id,cliente,tipo_lavoro').order('cliente');
-    const sel = document.getElementById(selId);
-    sel.innerHTML = '<option value="">-- Seleziona Cliente --</option>' + 
-        (data||[]).map(r=>`<option value="${r.id}">${r.cliente} (${r.tipo_lavoro})</option>`).join('');
-}
-
-// LOGICA CONTATTI
-window.saveC=async()=>{
-    const data=document.getElementById('c-data').value;
-    const cliente=document.getElementById('c-cliente').value.trim();
-    const tipo_lavoro=document.getElementById('c-tipo').value;
-    const valore=parseFloat(document.getElementById('c-valore').value)||0;
-    const stato=document.getElementById('c-stato').value;
-    if(!cliente || !tipo_lavoro){ alert('Inserire Cliente e Tipo Lavoro'); return; }
-    loading(true);
-    await sb.from('contatti').insert({data,cliente,tipo_lavoro,valore,stato});
-    notify('Contatto salvato');
-    resetC(); await renderC();
-    loading(false);
-};
-
-window.resetC=()=>{ document.getElementById('c-cliente').value=''; document.getElementById('c-valore').value=''; };
-
-async function renderC(){
-    const {data}=await sb.from('contatti').select('*').order('data',{ascending:false});
-    const tb=document.getElementById('tbody-c');
-    tb.innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>€ ${fmt(r.valore)}</td><td><span class="pill ${pillCls(r.stato)}">${r.stato}</span></td><td><button class="btn-del" onclick="delC(${r.id})">Elimina</button></td></tr>`).join('');
-}
-
-window.delC=async(id)=>{ if(confirm('Eliminare?')){ loading(true); await sb.from('contatti').delete().eq('id',id); await renderC(); loading(false); } };
-
-// LOGICA PRODUZIONE
-window.saveP=async()=>{
-    const data=document.getElementById('p-data').value;
-    const contatto_id=parseInt(document.getElementById('p-commessa').value);
-    const prodotto=document.getElementById('p-prodotto').value;
-    const operatore=document.getElementById('p-operatore').value;
-    const ore_lavorate=parseFloat(document.getElementById('p-ore').value)||0;
-    const avanzamento_giorno=parseInt(document.getElementById('p-av').value)||0;
-    if(!contatto_id || !operatore){ alert('Seleziona cliente e operatore'); return; }
-    loading(true);
-    const {data:esistenti}=await sb.from('produzione').select('avanzamento').eq('contatto_id',contatto_id).order('avanzamento',{ascending:false}).limit(1);
-    const avTot = (esistenti?.[0]?.avanzamento||0) + avanzamento_giorno;
-    await sb.from('produzione').insert({data,contatto_id,prodotto,operatore,ore_lavorate,avanzamento:avTot,note:document.getElementById('p-note').value});
-    notify('Lavoro registrato');
-    resetP(); await renderP();
-    loading(false);
-};
-
-window.resetP=()=>{ document.getElementById('p-prodotto').value=''; document.getElementById('p-ore').value=''; document.getElementById('p-av').value=''; };
-
-async function renderP(){
-    const {data}=await sb.from('produzione').select('*,contatti(cliente)').order('data',{ascending:false});
-    document.getElementById('tot-ore').textContent = (data||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0).toFixed(1);
-    document.getElementById('tbody-p').innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td>${r.operatore}</td><td>${r.ore_lavorate}h</td><td>+${r.avanzamento}%</td><td>${r.avanzamento}%</td><td><button class="btn-del" onclick="delP(${r.id})">✕</button></td></tr>`).join('');
-}
-
-window.delP=async(id)=>{ loading(true); await sb.from('produzione').delete().eq('id',id); await renderP(); loading(false); };
-
-// LOGICA INCASSI
-window.saveI=async()=>{
-    const contatto_id=parseInt(document.getElementById('i-commessa').value);
-    const incasso=parseFloat(document.getElementById('i-incasso').value)||0;
-    if(!contatto_id){ alert('Seleziona cliente'); return; }
-    loading(true);
-    await sb.from('uscite').insert({data:document.getElementById('i-data').value,contatto_id,incasso,finito:document.getElementById('i-finito').value==='true',data_consegna:document.getElementById('i-consegna').value});
-    notify('Incasso registrato');
-    await renderI(); loading(false);
-};
-
-async function renderI(){
-    const {data}=await sb.from('uscite').select('*,contatti(cliente)').order('data',{ascending:false});
-    document.getElementById('tbody-i').innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.finito?'Sì':'No'}</td><td>${r.data_consegna||'-'}</td><td>€ ${fmt(r.incasso)}</td><td><button class="btn-del" onclick="delI(${r.id})">✕</button></td></tr>`).join('');
-}
-
-// FUNZIONI DI STAMPA
-window.printSintetico=async(id)=>{
-    const {data:c}=await sb.from('contatti').select('*').eq('id',id).single();
-    const {data:p}=await sb.from('produzione').select('*').eq('contatto_id',id);
-    const ore = (p||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0);
-    const w=window.open('','','width=600,height=400');
-    w.document.write(`<html><body><h2>SCHEDA SINTETICA: ${c.cliente}</h2><p>Lavoro: ${c.tipo_lavoro}</p><p>Ore Totali: ${ore}h</p><p>Stato: ${c.stato}</p><button onclick="window.print()">Stampa</button></body></html>`);
-    w.document.close();
-};
-
-window.printCompleto=async(id)=>{
-    const {data:c}=await sb.from('contatti').select('*').eq('id',id).single();
-    const {data:p}=await sb.from('produzione').select('*').eq('contatto_id',id).order('data');
-    let h = `<html><head><style>table{width:100%;border-collapse:collapse;} th,td{border:1px solid #000;padding:5px;}</style></head><body>`;
-    h += `<h2>REPORT COMPLETO: ${c.cliente}</h2><p>Lavorazione: ${c.tipo_lavoro}</p><table><thead><tr><th>Data</th><th>Operazione</th><th>Operatore</th><th>Ore</th></tr></thead><tbody>`;
-    p.forEach(r => h+=`<tr><td>${r.data}</td><td>${r.prodotto}</td><td>${r.operatore}</td><td>${r.ore_lavorate}</td></tr>`);
-    h += `</tbody></table><br><button onclick="window.print()">Stampa PDF</button></body></html>`;
-    const w=window.open('','','width=800,height=600');
-    w.document.write(h); w.document.close();
-};
-
-window.printGenerale=async()=>{
-    const {data:c}=await sb.from('contatti').select('*');
-    let h = `<html><body><h2>RAPPORTO GENERALE FALEGNAMERIA</h2><table border="1" style="width:100%;border-collapse:collapse"><tr><th>Cliente</th><th>Lavoro</th><th>Valore</th><th>Stato</th></tr>`;
-    c.forEach(r => h+=`<tr><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>€ ${fmt(r.valore)}</td><td>${r.stato}</td></tr>`);
-    h += `</table><br><button onclick="window.print()">Stampa</button></body></html>`;
-    const w=window.open('','','width=800,height=600');
-    w.document.write(h); w.document.close();
-};
-
-async function renderStorico(){
-    const {data:contatti}=await sb.from('contatti').select('*').order('cliente');
-    const {data:prod}=await sb.from('produzione').select('*');
-    const {data:usc}=await sb.from('uscite').select('*');
-    const grid=document.getElementById('storico-grid');
-    if(!contatti?.length){ document.getElementById('storico-empty').style.display='block'; return; }
-    grid.innerHTML = contatti.map(c=>{
-        const cP = prod?.filter(x=>x.contatto_id===c.id) || [];
-        const cU = usc?.filter(x=>x.contatto_id===c.id) || [];
-        const ore = cP.reduce((s,r)=>s+Number(r.ore_lavorate),0);
-        const inc = cU.reduce((s,r)=>s+Number(r.incasso),0);
-        const av = cP.length ? Math.max(...cP.map(x=>x.avanzamento)) : 0;
-        return `<div class="s-card">
-            <div class="s-card-head"><div class="s-card-name">${c.cliente}</div><span class="pill ${pillCls(c.stato)}">${c.stato}</span></div>
-            <div class="s-card-tipo">${c.tipo_lavoro}</div>
-            <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${av}%"></div></div><div class="prog-val">${av}%</div></div>
-            <div class="s-stats">
-                <div class="s-stat"><div class="s-stat-lbl">Ore Totali</div><div class="s-stat-val">${ore}h</div></div>
-                <div class="s-stat"><div class="s-stat-lbl">Incassato</div><div class="s-stat-val">€ ${fmt(inc)}</div></div>
+    function renderStorico() {
+        const container = document.getElementById('lista-storico');
+        container.innerHTML = db.slice().reverse().map(i => `
+            <div class="item-card">
+                <div class="item-header">${i.cliente}</div>
+                <div class="item-details">
+                    Data: ${i.data} | Lavoro: ${i.lavoro}<br>
+                    Operatore: <b>${i.operatore}</b><br>
+                    Note: ${i.misure}
+                </div>
+                <div class="btn-row">
+                    <button class="btn-small btn-edit" onclick="apriModifica(${i.id})">MODIFICA</button>
+                    <button class="btn-small btn-sint" onclick="stampaSingola(${i.id}, 'sint')">SINTETICA</button>
+                    <button class="btn-small btn-comp" onclick="stampaSingola(${i.id}, 'comp')">COMPLETA</button>
+                    <button class="btn-small btn-del" onclick="elimina(${i.id})">ELIMINA</button>
+                </div>
             </div>
-            <div class="s-card-actions">
-                <button class="btn-pdf" onclick="printSintetico(${c.id})">Sintetica</button>
-                <button class="btn-pdf" onclick="printCompleto(${c.id})">Completa</button>
-            </div>
-        </div>`;
-    }).join('');
-}
+        `).join('');
+    }
 
-init();
+    function apriModifica(id) {
+        const item = db.find(i => i.id === id);
+        document.getElementById('edit-id').value = item.id;
+        document.getElementById('edit-cliente').value = item.cliente;
+        document.getElementById('edit-lavoro').value = item.lavoro;
+        document.getElementById('edit-operatore').value = item.operatore;
+        document.getElementById('edit-misure').value = item.misure;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function confermaModifica() {
+        const id = parseInt(document.getElementById('edit-id').value);
+        const index = db.findIndex(i => i.id === id);
+        db[index].cliente = document.getElementById('edit-cliente').value;
+        db[index].lavoro = document.getElementById('edit-lavoro').value;
+        db[index].operatore = document.getElementById('edit-operatore').value;
+        db[index].misure = document.getElementById('edit-misure').value;
+        localStorage.setItem('falegnameria_db', JSON.stringify(db));
+        document.getElementById('editModal').style.display = 'none';
+        renderStorico();
+    }
+
+    function elimina(id) {
+        if(confirm("Eliminare questa lavorazione?")) {
+            db = db.filter(i => i.id !== id);
+            localStorage.setItem('falegnameria_db', JSON.stringify(db));
+            renderStorico();
+        }
+    }
+
+    function stampaSingola(id, tipo) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const i = db.find(item => item.id === id);
+        doc.setFontSize(20); doc.text("FALEGNAMERIA DESANTIS", 10, 20);
+        doc.setFontSize(12); doc.text("Dettaglio Lavorazione - " + i.data, 10, 30);
+        doc.line(10, 35, 200, 35);
+        let y = 50;
+        doc.text("CLIENTE: " + i.cliente.toUpperCase(), 10, y);
+        doc.text("LAVORO: " + i.lavoro, 10, y+10);
+        doc.text("OPERATORE: " + i.operatore, 10, y+20);
+        if(tipo === 'comp') {
+            doc.text("DETTAGLI E MISURE:", 10, y+40);
+            doc.setFontSize(10);
+            doc.text(i.misure || "Nessun dettaglio", 10, y+50);
+        }
+        doc.save(`Lavoro_${i.cliente}.pdf`);
+    }
+
+    function generaReportGenerale() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("REPORT GENERALE LAVORAZIONI", 10, 10);
+        const rows = db.map(i => [i.data, i.cliente, i.lavoro, i.operatore]);
+        doc.autoTable({ head: [['Data', 'Cliente', 'Lavoro', 'Operatore']], body: rows, startY: 20 });
+        doc.save("Report_Generale.pdf");
+    }
 </script>
+
 </body>
 </html>
