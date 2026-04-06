@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestione Falegnameria Desantis</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --accent: #e67e22; --light: #ecf0f1; --success: #27ae60; --danger: #e74c3c; --warning: #f1c40f; }
         * { box-sizing: border-box; font-family: sans-serif; }
@@ -22,12 +21,13 @@
         button { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px; }
         .btn-main { background: var(--accent); color: white; }
         .item-card { background: white; border-left: 5px solid var(--accent); padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
-        .btn-small { padding: 8px; font-size: 12px; margin: 0; }
-        .btn-edit { background: var(--warning); }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 10px; }
+        .btn-small { padding: 8px; font-size: 11px; margin: 0; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; }
+        .btn-edit { background: var(--warning); color: black; }
         .btn-del { background: var(--danger); color: white; }
         .btn-print { background: #3498db; color: white; }
-        .money-box { background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 5px; border: 1px dashed #ccc; }
+        .money-box { background: #fdf2e9; padding: 8px; border-radius: 4px; margin-top: 5px; border: 1px solid #fabd8d; color: #7e4a19; }
+        .hidden { display: none; }
         #editModal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000; }
         .modal-content { background:white; width:95%; max-height:90vh; overflow-y:auto; padding:20px; border-radius:8px; }
     </style>
@@ -37,16 +37,16 @@
 <div class="header"><h3>FALEGNAMERIA DESANTIS</h3></div>
 
 <div class="nav-tabs">
-    <div class="tab active" onclick="showTab('contatti')">CONTATTI</div>
-    <div class="tab" onclick="showTab('produzione')">PRODUZIONE</div>
-    <div class="tab" onclick="showTab('storico')">STORICO</div>
+    <div id="t-contatti" class="tab active" onclick="showTab('contatti')">CONTATTI</div>
+    <div id="t-produzione" class="tab" onclick="showTab('produzione')">PRODUZIONE</div>
+    <div id="t-storico" class="tab" onclick="showTab('storico')">STORICO</div>
 </div>
 
 <div id="tab-contatti" class="container tab-content">
     <div class="card">
-        <div class="form-group"><label>Cliente</label><input type="text" id="c-cliente"></div>
+        <div class="form-group"><label>Nome Cliente</label><input type="text" id="c-cliente" placeholder="es: Mario Rossi"></div>
         <div class="form-group">
-            <label>Lavorazione</label>
+            <label>Tipo Lavorazione</label>
             <select id="c-lavoro">
                 <option value="Porte Interne">Porte Interne</option>
                 <option value="Finestre">Finestre</option>
@@ -57,7 +57,7 @@
         </div>
         <div class="form-group"><label>Incasso Totale (€)</label><input type="number" id="c-totale" value="0"></div>
         <div class="form-group"><label>Acconto (€)</label><input type="number" id="c-acconto" value="0"></div>
-        <button class="btn-main" onclick="salva('contatti')">SALVA CONTATTO</button>
+        <button class="btn-main" onclick="salvaContatto()">SALVA CONTATTO</button>
     </div>
 </div>
 
@@ -71,8 +71,8 @@
                 <option value="Dipendente Nazzareno">Dipendente Nazzareno</option>
             </select>
         </div>
-        <div class="form-group"><label>Misure e Note Tecniche</label><textarea id="p-misure" rows="3"></textarea></div>
-        <button class="btn-main" onclick="salva('produzione')">AGGIORNA PRODUZIONE</button>
+        <div class="form-group"><label>Misure e Note Tecniche</label><textarea id="p-misure" rows="4" placeholder="Inserisci misure..."></textarea></div>
+        <button class="btn-main" onclick="aggiornaProduzione()">AGGIORNA PRODUZIONE</button>
     </div>
 </div>
 
@@ -89,62 +89,71 @@
         <div class="form-group"><label>Totale €</label><input type="number" id="e-totale"></div>
         <div class="form-group"><label>Acconto €</label><input type="number" id="e-acconto"></div>
         <button class="btn-main" onclick="chiudiModifica(true)">SALVA MODIFICHE</button>
-        <button class="btn-del" onclick="chiudiModifica(false)">ANNULLA</button>
+        <button class="btn-del" style="background:#7f8c8d" onclick="chiudiModifica(false)">ANNULLA</button>
     </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('fale_db_v2')) || [];
+    let db = JSON.parse(localStorage.getItem('fale_db_v3')) || [];
 
     function showTab(t) {
         document.querySelectorAll('.tab-content').forEach(x => x.classList.add('hidden'));
         document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
-        event.currentTarget.classList.add('active');
-        if(t==='produzione') {
-            document.getElementById('p-select').innerHTML = db.map(i=>`<option value="${i.id}">${i.cliente}</option>`).join('');
+        document.getElementById('tab-' + t).classList.remove('hidden');
+        document.getElementById('t-' + t).classList.add('active');
+        
+        if(t === 'produzione') {
+            const select = document.getElementById('p-select');
+            select.innerHTML = db.length ? db.map(i => `<option value="${i.id}">${i.cliente}</option>`).join('') : '<option>Nessun cliente</option>';
         }
-        if(t==='storico') render();
+        if(t === 'storico') renderStorico();
     }
 
-    function salva(tipo) {
-        if(tipo==='contatti') {
-            let n = {
-                id: Date.now(),
-                cliente: document.getElementById('c-cliente').value,
-                lavoro: document.getElementById('c-lavoro').value,
-                totale: parseFloat(document.getElementById('c-totale').value) || 0,
-                acconto: parseFloat(document.getElementById('c-acconto').value) || 0,
-                operatore: 'Da assegnare',
-                misure: '',
-                data: new Date().toLocaleDateString()
-            };
-            db.push(n);
-        } else {
-            let id = parseInt(document.getElementById('p-select').value);
-            let idx = db.findIndex(x=>x.id===id);
-            if(idx !== -1) {
-                db[idx].operatore = document.getElementById('p-op').value;
-                db[idx].misure = document.getElementById('p-misure').value;
-            }
-        }
-        localStorage.setItem('fale_db_v2', JSON.stringify(db));
-        alert("Dati salvati correttamente");
+    function salvaContatto() {
+        const cliente = document.getElementById('c-cliente').value;
+        if(!cliente) return alert("Inserisci il nome cliente");
+        const n = {
+            id: Date.now(),
+            cliente: cliente,
+            lavoro: document.getElementById('c-lavoro').value,
+            totale: parseFloat(document.getElementById('c-totale').value) || 0,
+            acconto: parseFloat(document.getElementById('c-acconto').value) || 0,
+            operatore: 'Da assegnare',
+            misure: '',
+            data: new Date().toLocaleDateString()
+        };
+        db.push(n);
+        localStorage.setItem('fale_db_v3', JSON.stringify(db));
+        alert("Cliente registrato!");
+        document.getElementById('c-cliente').value = '';
         showTab('storico');
     }
 
-    function render() {
-        document.getElementById('lista-storico').innerHTML = db.slice().reverse().map(i => `
+    function aggiornaProduzione() {
+        const id = parseInt(document.getElementById('p-select').value);
+        const idx = db.findIndex(x => x.id === id);
+        if(idx !== -1) {
+            db[idx].operatore = document.getElementById('p-op').value;
+            db[idx].misure = document.getElementById('p-misure').value;
+            localStorage.setItem('fale_db_v3', JSON.stringify(db));
+            alert("Produzione aggiornata!");
+            showTab('storico');
+        }
+    }
+
+    function renderStorico() {
+        const lista = document.getElementById('lista-storico');
+        lista.innerHTML = db.slice().reverse().map(i => `
             <div class="item-card">
-                <b>${i.cliente}</b> - ${i.data}<br>
-                Lavoro: ${i.lavoro} | Op: ${i.operatore}<br>
+                <b>${i.cliente}</b> <span style="float:right; font-size:10px">${i.data}</span><br>
+                <small>${i.lavoro} | Op: ${i.operatore}</small>
                 <div class="money-box">
-                    Totale: ${i.totale}€ | Acconto: ${i.acconto}€ | <b>Resto: ${i.totale - i.acconto}€</b>
+                    Totale: ${i.totale}€ | Acc: ${i.acconto}€ | <b>Resto: ${i.totale - i.acconto}€</b>
                 </div>
-                <i>Note: ${i.misure || 'Nessuna'}</i>
+                <div style="margin-top:5px; font-size:12px; color:#555"><i>${i.misure || 'Nessuna nota'}</i></div>
                 <div class="btn-row">
                     <button class="btn-small btn-edit" onclick="apriModifica(${i.id})">MODIFICA</button>
-                    <button class="btn-small btn-print" onclick="stampa(${i.id})">STAMPA</button>
+                    <button class="btn-small btn-print" onclick="stampaPDF(${i.id})">PDF</button>
                     <button class="btn-small btn-del" onclick="elimina(${i.id})">ELIMINA</button>
                 </div>
             </div>
@@ -152,7 +161,7 @@
     }
 
     function apriModifica(id) {
-        let i = db.find(x=>x.id===id);
+        const i = db.find(x => x.id === id);
         document.getElementById('e-id').value = i.id;
         document.getElementById('e-cliente').value = i.cliente;
         document.getElementById('e-misure').value = i.misure;
@@ -163,38 +172,46 @@
 
     function chiudiModifica(salva) {
         if(salva) {
-            let id = parseInt(document.getElementById('e-id').value);
-            let idx = db.findIndex(x=>x.id===id);
+            const id = parseInt(document.getElementById('e-id').value);
+            const idx = db.findIndex(x => x.id === id);
             db[idx].cliente = document.getElementById('e-cliente').value;
             db[idx].misure = document.getElementById('e-misure').value;
-            db[idx].totale = parseFloat(document.getElementById('e-totale').value);
-            db[idx].acconto = parseFloat(document.getElementById('e-acconto').value);
-            localStorage.setItem('fale_db_v2', JSON.stringify(db));
+            db[idx].totale = parseFloat(document.getElementById('e-totale').value) || 0;
+            db[idx].acconto = parseFloat(document.getElementById('e-acconto').value) || 0;
+            localStorage.setItem('fale_db_v3', JSON.stringify(db));
         }
         document.getElementById('editModal').style.display = 'none';
-        render();
+        renderStorico();
     }
 
     function elimina(id) {
-        if(confirm("Eliminare definitivamente?")) {
-            db = db.filter(x=>x.id!==id);
-            localStorage.setItem('fale_db_v2', JSON.stringify(db));
-            render();
+        if(confirm("Eliminare questa scheda?")) {
+            db = db.filter(x => x.id !== id);
+            localStorage.setItem('fale_db_v3', JSON.stringify(db));
+            renderStorico();
         }
     }
 
-    function stampa(id) {
+    function stampaPDF(id) {
+        const i = db.find(x => x.id === id);
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const i = db.find(x=>x.id===id);
-        doc.text("FALEGNAMERIA DESANTIS - Ricevuta", 10, 10);
-        doc.text("Cliente: " + i.cliente, 10, 30);
-        doc.text("Lavorazione: " + i.lavoro, 10, 40);
-        doc.text("Totale: " + i.totale + " Euro", 10, 50);
-        doc.text("Acconto: " + i.acconto + " Euro", 10, 60);
-        doc.text("Rimanente: " + (i.totale - i.acconto) + " Euro", 10, 70);
-        doc.text("Note: " + i.misure, 10, 80);
-        doc.save("Scheda_"+i.cliente+".pdf");
+        doc.setFontSize(20);
+        doc.text("FALEGNAMERIA DESANTIS", 10, 20);
+        doc.setFontSize(12);
+        doc.text("Data: " + i.data, 10, 30);
+        doc.text("Cliente: " + i.cliente, 10, 45);
+        doc.text("Lavorazione: " + i.lavoro, 10, 55);
+        doc.text("Operatore: " + i.operatore, 10, 65);
+        doc.line(10, 70, 200, 70);
+        doc.text("Totale Lavoro: " + i.totale + " Euro", 10, 80);
+        doc.text("Acconto versato: " + i.acconto + " Euro", 10, 90);
+        doc.setFont(undefined, 'bold');
+        doc.text("RIMANENTE DA PAGARE: " + (i.totale - i.acconto) + " Euro", 10, 100);
+        doc.setFont(undefined, 'normal');
+        doc.text("Note e Misure:", 10, 115);
+        doc.text(i.misure || "Nessuna", 10, 125);
+        doc.save("Scheda_" + i.cliente + ".pdf");
     }
 </script>
 </body>
