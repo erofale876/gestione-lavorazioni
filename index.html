@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DESANTIS LAB - Produzione</title>
+<title>DESANTIS LAB - Gestione Totale</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-/* --- STILE PROFESSIONALE DESANTIS --- */
 :root {
     --bg: #0d0d0d; --bg-card: #161616; --bg-input: #1e1e1e;
     --orange: #e8692a; --text: #d4c4a8; --text-dim: #8a7a60;
@@ -18,8 +17,6 @@ body {
     font-family: 'Share Tech Mono', monospace; font-size: 14px; 
     height: 100vh; display: flex; flex-direction: column; overflow: hidden;
 }
-
-/* --- LAYOUT FISSO E SCROLL --- */
 .fixed-top {
     position: fixed; top: 0; left: 0; right: 0;
     height: var(--header-h); background: var(--bg);
@@ -33,41 +30,29 @@ body {
     color: var(--text-dim); font-family: inherit; font-size: 10px; font-weight: 700;
     text-transform: uppercase; border-bottom: 3px solid transparent;
 }
-.tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); background: rgba(232,105,42,0.05); }
-
+.tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
 main { margin-top: var(--header-h); padding: 15px; flex: 1; overflow-y: auto; padding-bottom: 50px; }
 .panel { display: none; } .panel.active { display: block; }
-
-/* --- COMPONENTI UI --- */
 .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 15px; margin-bottom: 20px; }
 .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
-.form-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
+.form-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; }
 .form-input, .form-select { 
     width: 100%; background: var(--bg-input); border: 1px solid var(--border); 
-    border-radius: 3px; padding: 10px; color: var(--text); font-family: inherit; font-size: 13px;
+    padding: 10px; color: var(--text); font-family: inherit;
 }
 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .btn { padding: 12px; font-family: inherit; font-weight: 700; border-radius: 3px; cursor: pointer; text-transform: uppercase; border: none; }
 .btn-save { background: var(--orange); color: white; }
 .btn-cancel { background: #333; color: #999; }
-
-/* --- TABELLE --- */
-.table-wrap { overflow-x: auto; border: 1px solid var(--border); background: var(--bg-card); border-radius: 4px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); background: var(--bg-card); }
 table { width: 100%; border-collapse: collapse; min-width: 500px; }
 th { background: #000; color: var(--orange); font-size: 10px; text-align: left; padding: 12px; }
-td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #bbb; }
-.btn-mod { color: #6ab0f0; background: none; border: none; cursor: pointer; margin-right: 10px; }
-.btn-del { color: #e05050; background: none; border: none; cursor: pointer; }
-
-/* --- STORICO WIP --- */
+td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; }
 .s-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
 .wip-bar-bg { background: #333; height: 6px; border-radius: 3px; margin: 10px 0; }
 .wip-bar-fill { background: var(--orange); height: 100%; border-radius: 3px; }
-.timeline { margin: 15px 0; padding-left: 15px; border-left: 1px dashed var(--orange); }
-.t-item { font-size: 11px; margin-bottom: 8px; position: relative; }
-.t-item::before { content: ''; position: absolute; left: -19px; top: 4px; width: 7px; height: 7px; background: var(--orange); border-radius: 50%; }
-
-#loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; color: var(--orange); font-weight: 700; }
+.timeline { margin: 15px 0; padding-left: 15px; border-left: 1px dashed var(--orange); font-size: 11px; }
+#loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; color: var(--orange); }
 </style>
 </head>
 <body>
@@ -92,11 +77,8 @@ td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #b
             <input type="hidden" id="c-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="c-data" class="form-input"></div>
             <div class="form-group"><label class="form-label">Cliente</label><input type="text" id="c-cliente" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Valore (€)</label><input type="number" id="c-valore" class="form-input"></div>
-            <div class="btn-row">
-                <button class="btn btn-cancel" onclick="resetFormC()">Annulla</button>
-                <button class="btn btn-save" onclick="saveC()">Salva</button>
-            </div>
+            <div class="form-group"><label class="form-label">Valore Lavoro (€)</label><input type="number" id="c-valore" class="form-input"></div>
+            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormC()">Annulla</button><button class="btn btn-save" onclick="saveC()">Salva</button></div>
         </div>
         <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Prezzo</th><th>Azioni</th></tr></thead><tbody id="tbody-c"></tbody></table></div>
     </section>
@@ -106,35 +88,39 @@ td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #b
             <input type="hidden" id="p-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="p-data" class="form-input"></div>
             <div class="form-group"><label class="form-label">Cliente</label><select id="p-commessa" class="form-select"></select></div>
-            <div class="form-group"><label class="form-label">Lavorazione</label>
+            <div class="form-group"><label class="form-label">Cosa hai fatto? (Standard)</label>
                 <select id="p-operazione-std" class="form-select">
                     <option>Taglio e Sezionatura</option><option>Bordatura</option><option>Levigatura</option>
                     <option>Verniciatura</option><option>Assemblaggio</option><option>Ferramenta</option>
                     <option>Montaggio Esterno</option><option>Altro</option>
                 </select>
             </div>
-            <div class="form-group"><label class="form-label">Note</label><input type="text" id="p-note" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Operatore</label>
+            <div class="form-group"><label class="form-label">Note Operazione</label><input type="text" id="p-note" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Chi?</label>
                 <select id="p-operatore" class="form-select">
-                    <option>Titolare Desantis</option><option>Nazzareno</option>
-                    <option>Dipendente B</option><option>Terzista</option><option>Altro</option>
+                    <option>Titolare</option><option>Nazzareno</option><option>Dipendente B</option><option>Terzista</option>
                 </select>
             </div>
             <div class="form-group"><label class="form-label">Ore</label><input type="number" id="p-ore" class="form-input" step="0.5"></div>
             <div class="form-group"><label class="form-label">% Avanzamento</label><input type="number" id="p-av" class="form-input"></div>
-            <div class="btn-row">
-                <button class="btn btn-cancel" onclick="resetFormP()">Annulla</button>
-                <button class="btn btn-save" onclick="saveP()">Registra</button>
-            </div>
+            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormP()">Annulla</button><button class="btn btn-save" onclick="saveP()">Registra</button></div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Cosa</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table></div>
     </section>
 
     <section id="panel-incassi" class="panel">
-        <div class="section-card"><p>Modulo incassi attivo. Registra qui i pagamenti ricevuti dai clienti.</p></div>
+        <div class="section-card">
+            <input type="hidden" id="i-eid">
+            <div class="form-group"><label class="form-label">Data</label><input type="date" id="i-data" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Cliente</label><select id="i-commessa" class="form-select"></select></div>
+            <div class="form-group"><label class="form-label">Importo Incassato (€)</label><input type="number" id="i-incasso" class="form-input"></div>
+            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormI()">Annulla</button><button class="btn btn-save" onclick="saveI()">Registra</button></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Importo</th><th>Azioni</th></tr></thead><tbody id="tbody-i"></tbody></table></div>
     </section>
 
     <section id="panel-storico" class="panel">
+        <div class="search-box"><input type="text" id="search-input" class="search-input" placeholder="Cerca cliente..." style="width:100%; padding:12px; margin-bottom:15px; background:#000; border:1px solid var(--orange); color:white;" oninput="renderStorico()"></div>
         <div id="storico-list"></div>
     </section>
 </main>
@@ -145,12 +131,14 @@ const sb = createClient('https://uyzfhilwtikrjqgylxwg.supabase.co', 'eyJhbGciOiJ
 
 const $ = id => document.getElementById(id);
 const loading = on => $('loading').style.display = on ? 'flex' : 'none';
+const today = () => new Date().toISOString().split('T')[0];
 
 window.switchTab = async (n) => {
     document.querySelectorAll('.panel, .tab-btn').forEach(el => el.classList.remove('active'));
     $('panel-'+n).classList.add('active'); $('tab-'+n.charAt(0)).classList.add('active');
     if(n==='contatti') renderC();
     if(n==='produzione') { await fillSels('p-commessa'); renderP(); }
+    if(n==='incassi') { await fillSels('i-commessa'); renderI(); }
     if(n==='storico') renderStorico();
 };
 
@@ -159,64 +147,76 @@ async function fillSels(id) {
     $(id).innerHTML = (data||[]).map(r => `<option value="${r.id}">${r.cliente}</option>`).join('');
 }
 
-// SALVATAGGIO PRODUZIONE (FIXED)
+// FIX REGISTRAZIONE: SOLO COLONNA 'PRODOTTO'
 window.saveP = async () => {
     const id = $('p-eid').value;
     const desc = `${$('p-operazione-std').value}: ${$('p-note').value}`;
-    
-    // Proviamo a inviare l'operazione in tutte le possibili colonne per evitare il "mancato salvataggio"
     const obj = { 
         data: $('p-data').value, 
         contatto_id: $('p-commessa').value, 
         operatore: $('p-operatore').value, 
         ore_lavorate: parseFloat($('p-ore').value), 
         avanzamento: parseInt($('p-av').value),
-        prodotto: desc,   // Tentativo 1
-        operazione: desc  // Tentativo 2
+        prodotto: desc // Usiamo SOLO prodotto, dato che 'operazione' non esiste nel tuo DB
     };
-
     loading(true);
-    let res;
-    if(id) res = await sb.from('produzione').update(obj).eq('id', id);
-    else res = await sb.from('produzione').insert(obj);
-    
-    if(res.error) alert("Errore Database: " + res.error.message);
-    else { resetFormP(); renderP(); }
-    loading(false);
+    if(id) await sb.from('produzione').update(obj).eq('id', id);
+    else await sb.from('produzione').insert(obj);
+    resetFormP(); await renderP(); loading(false);
 };
 
 window.saveC = async () => {
-    const obj = { data: $('c-data').value, cliente: $('c-cliente').value, valore: $('c-valore').value };
+    const obj = { data: $('c-data').value, cliente: $('c-cliente').value, valore: parseFloat($('c-valore').value) };
     loading(true); await sb.from('contatti').insert(obj); renderC(); loading(false); resetFormC();
+};
+
+window.saveI = async () => {
+    const obj = { data: $('i-data').value, contatto_id: $('i-commessa').value, incasso: parseFloat($('i-incasso').value) };
+    loading(true); await sb.from('uscite').insert(obj); renderI(); loading(false); resetFormI();
 };
 
 async function renderC() {
     const {data} = await sb.from('contatti').select('*').order('id', {ascending:false});
-    $('tbody-c').innerHTML = (data||[]).map(r => `<tr><td>${r.cliente}</td><td>€ ${r.valore}</td><td><button class="btn-del" onclick="delC(${r.id})">✕</button></td></tr>`).join('');
+    $('tbody-c').innerHTML = (data||[]).map(r => `<tr><td>${r.cliente}</td><td>€ ${r.valore}</td><td><button onclick="delC(${r.id})">✕</button></td></tr>`).join('');
 }
 
 async function renderP() {
     const {data} = await sb.from('produzione').select('*, contatti(cliente)').order('id', {ascending:false});
-    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto || r.operazione}</td><td><button class="btn-del" onclick="delP(${r.id})">✕</button></td></tr>`).join('');
+    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td><button onclick="delP(${r.id})">✕</button></td></tr>`).join('');
+}
+
+async function renderI() {
+    const {data} = await sb.from('uscite').select('*, contatti(cliente)').order('id', {ascending:false});
+    $('tbody-i').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>€ ${r.incasso}</td><td><button onclick="delI(${r.id})">✕</button></td></tr>`).join('');
 }
 
 async function renderStorico() {
-    const {data: c} = await sb.from('contatti').select('*');
+    loading(true);
+    const filter = $('search-input').value.toLowerCase();
+    const {data: c} = await sb.from('contatti').select('*').order('cliente');
     const {data: p} = await sb.from('produzione').select('*').order('data');
-    $('storico-list').innerHTML = c.map(cl => {
+    const {data: i} = await sb.from('uscite').select('*');
+    $('storico-list').innerHTML = c.filter(x => x.cliente.toLowerCase().includes(filter)).map(cl => {
         const logs = p.filter(l => l.contatto_id === cl.id);
+        const inc = i.filter(ix => ix.contatto_id === cl.id).reduce((a,b)=>a+b.incasso, 0);
         const avMax = logs.length > 0 ? Math.max(...logs.map(l => l.avanzamento)) : 0;
-        return `<div class="s-card"><b>${cl.cliente}</b><div class="wip-bar-bg"><div class="wip-bar-fill" style="width:${avMax}%"></div></div><div class="timeline">${logs.map(l => `<div class="t-item">${l.data}: ${l.prodotto || l.operazione} (${l.operatore})</div>`).join('')}</div></div>`;
+        return `<div class="s-card">
+            <b>${cl.cliente}</b> [Saldo: € ${cl.valore - inc}]
+            <div class="wip-bar-bg"><div class="wip-bar-fill" style="width:${avMax}%"></div></div>
+            <div class="timeline">${logs.map(l => `<div>${l.data}: ${l.prodotto} (${l.operatore})</div>`).join('')}</div>
+        </div>`;
     }).join('');
+    loading(false);
 }
 
-window.resetFormP = () => { $('p-eid').value = ''; $('p-note').value = ''; $('p-ore').value = ''; $('p-av').value = ''; $('p-data').value = new Date().toISOString().split('T')[0]; };
-window.resetFormC = () => { $('c-eid').value = ''; $('c-cliente').value = ''; $('c-valore').value = ''; $('c-data').value = new Date().toISOString().split('T')[0]; };
+window.resetFormC = () => { $('c-eid').value = ''; $('c-cliente').value = ''; $('c-valore').value = ''; $('c-data').value = today(); };
+window.resetFormP = () => { $('p-eid').value = ''; $('p-note').value = ''; $('p-ore').value = ''; $('p-av').value = ''; $('p-data').value = today(); };
+window.resetFormI = () => { $('i-eid').value = ''; $('i-incasso').value = ''; $('i-data').value = today(); };
 window.delC = async id => { if(confirm('Elimina?')) { await sb.from('contatti').delete().eq('id', id); renderC(); } };
 window.delP = async id => { if(confirm('Elimina?')) { await sb.from('produzione').delete().eq('id', id); renderP(); } };
+window.delI = async id => { if(confirm('Elimina?')) { await sb.from('uscite').delete().eq('id', id); renderI(); } };
 
-$('c-data').value = new Date().toISOString().split('T')[0];
-$('p-data').value = new Date().toISOString().split('T')[0];
+$('c-data').value = today(); $('p-data').value = today(); $('i-data').value = today();
 renderC();
 </script>
 </body>
