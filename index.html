@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DESANTIS LAB - Gestione Totale</title>
+<title>DESANTIS LAB - Gestionale Completo</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -30,29 +30,41 @@ body {
     color: var(--text-dim); font-family: inherit; font-size: 10px; font-weight: 700;
     text-transform: uppercase; border-bottom: 3px solid transparent;
 }
-.tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
-main { margin-top: var(--header-h); padding: 15px; flex: 1; overflow-y: auto; padding-bottom: 50px; }
+.tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); background: rgba(232,105,42,0.1); }
+
+main { margin-top: var(--header-h); padding: 15px; flex: 1; overflow-y: auto; padding-bottom: 60px; }
 .panel { display: none; } .panel.active { display: block; }
+
 .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 15px; margin-bottom: 20px; }
+.edit-banner { display: none; background: rgba(232,105,42,0.2); border: 1px solid var(--orange); padding: 8px; margin-bottom: 10px; color: var(--orange); text-align: center; font-size: 11px; }
+.edit-banner.show { display: block; }
+
 .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
-.form-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; }
+.form-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
 .form-input, .form-select { 
     width: 100%; background: var(--bg-input); border: 1px solid var(--border); 
-    padding: 10px; color: var(--text); font-family: inherit;
+    padding: 10px; color: var(--text); font-family: inherit; border-radius: 3px;
 }
 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .btn { padding: 12px; font-family: inherit; font-weight: 700; border-radius: 3px; cursor: pointer; text-transform: uppercase; border: none; }
 .btn-save { background: var(--orange); color: white; }
 .btn-cancel { background: #333; color: #999; }
-.table-wrap { overflow-x: auto; border: 1px solid var(--border); background: var(--bg-card); }
-table { width: 100%; border-collapse: collapse; min-width: 500px; }
-th { background: #000; color: var(--orange); font-size: 10px; text-align: left; padding: 12px; }
-td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); background: var(--bg-card); border-radius: 4px; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; min-width: 550px; }
+th { background: #000; color: var(--orange); font-size: 10px; text-align: left; padding: 12px; text-transform: uppercase; }
+td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #bbb; }
+
+.btn-mod { color: #6ab0f0; background: none; border: none; cursor: pointer; margin-right: 12px; font-family: inherit; font-size: 11px; text-decoration: underline; }
+.btn-del { color: #e05050; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 11px; }
+
 .s-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
-.wip-bar-bg { background: #333; height: 6px; border-radius: 3px; margin: 10px 0; }
-.wip-bar-fill { background: var(--orange); height: 100%; border-radius: 3px; }
+.wip-bar-bg { background: #333; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+.wip-bar-fill { background: var(--orange); height: 100%; transition: 0.4s; }
 .timeline { margin: 15px 0; padding-left: 15px; border-left: 1px dashed var(--orange); font-size: 11px; }
-#loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; color: var(--orange); }
+.t-item { margin-bottom: 8px; }
+
+#loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; color: var(--orange); font-weight: 700; letter-spacing: 2px; }
 </style>
 </head>
 <body>
@@ -64,7 +76,7 @@ td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; }
         <div class="header-title">■ DESANTIS LAB</div>
     </div>
     <div class="tabs">
-        <button id="tab-c" class="tab-btn active" onclick="switchTab('contatti')">Contatti</button>
+        <button id="tab-c" class="tab-btn active" onclick="switchTab('contatti')">Clienti</button>
         <button id="tab-p" class="tab-btn" onclick="switchTab('produzione')">Produzione</button>
         <button id="tab-i" class="tab-btn" onclick="switchTab('incassi')">Incassi</button>
         <button id="tab-s" class="tab-btn" onclick="switchTab('storico')">Storico</button>
@@ -74,53 +86,71 @@ td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; }
 <main id="main-content">
     <section id="panel-contatti" class="panel active">
         <div class="section-card">
+            <div id="c-banner" class="edit-banner">MODALITÀ MODIFICA ATTIVA</div>
             <input type="hidden" id="c-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="c-data" class="form-input"></div>
             <div class="form-group"><label class="form-label">Cliente</label><input type="text" id="c-cliente" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Valore Lavoro (€)</label><input type="number" id="c-valore" class="form-input"></div>
-            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormC()">Annulla</button><button class="btn btn-save" onclick="saveC()">Salva</button></div>
+            <div class="form-group"><label class="form-label">Valore Preventivo (€)</label><input type="number" id="c-valore" class="form-input"></div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="resetFormC()">Annulla</button>
+                <button class="btn btn-save" onclick="saveC()">Salva Cliente</button>
+            </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Prezzo</th><th>Azioni</th></tr></thead><tbody id="tbody-c"></tbody></table></div>
+        <div class="table-wrap">
+            <table><thead><tr><th>Cliente</th><th>Prezzo</th><th>Azioni</th></tr></thead><tbody id="tbody-c"></tbody></table>
+        </div>
     </section>
 
     <section id="panel-produzione" class="panel">
         <div class="section-card">
+            <div id="p-banner" class="edit-banner">MODALITÀ MODIFICA ATTIVA</div>
             <input type="hidden" id="p-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="p-data" class="form-input"></div>
             <div class="form-group"><label class="form-label">Cliente</label><select id="p-commessa" class="form-select"></select></div>
-            <div class="form-group"><label class="form-label">Cosa hai fatto? (Standard)</label>
+            <div class="form-group"><label class="form-label">Lavorazione</label>
                 <select id="p-operazione-std" class="form-select">
                     <option>Taglio e Sezionatura</option><option>Bordatura</option><option>Levigatura</option>
                     <option>Verniciatura</option><option>Assemblaggio</option><option>Ferramenta</option>
                     <option>Montaggio Esterno</option><option>Altro</option>
                 </select>
             </div>
-            <div class="form-group"><label class="form-label">Note Operazione</label><input type="text" id="p-note" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Chi?</label>
+            <div class="form-group"><label class="form-label">Note</label><input type="text" id="p-note" class="form-input" placeholder="Dettagli..."></div>
+            <div class="form-group"><label class="form-label">Operatore</label>
                 <select id="p-operatore" class="form-select">
                     <option>Titolare</option><option>Nazzareno</option><option>Dipendente B</option><option>Terzista</option>
                 </select>
             </div>
             <div class="form-group"><label class="form-label">Ore</label><input type="number" id="p-ore" class="form-input" step="0.5"></div>
             <div class="form-group"><label class="form-label">% Avanzamento</label><input type="number" id="p-av" class="form-input"></div>
-            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormP()">Annulla</button><button class="btn btn-save" onclick="saveP()">Registra</button></div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="resetFormP()">Annulla</button>
+                <button class="btn btn-save" onclick="saveP()">Registra</button>
+            </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table></div>
+        <div class="table-wrap">
+            <table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table>
+        </div>
     </section>
 
     <section id="panel-incassi" class="panel">
         <div class="section-card">
+            <div id="i-banner" class="edit-banner">MODALITÀ MODIFICA ATTIVA</div>
             <input type="hidden" id="i-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="i-data" class="form-input"></div>
             <div class="form-group"><label class="form-label">Cliente</label><select id="i-commessa" class="form-select"></select></div>
-            <div class="form-group"><label class="form-label">Importo Incassato (€)</label><input type="number" id="i-incasso" class="form-input"></div>
-            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormI()">Annulla</button><button class="btn btn-save" onclick="saveI()">Registra</button></div>
+            <div class="form-group"><label class="form-label">Importo (€)</label><input type="number" id="i-incasso" class="form-input"></div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="resetFormI()">Annulla</button>
+                <button class="btn btn-save" onclick="saveI()">Registra Incasso</button>
+            </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Importo</th><th>Azioni</th></tr></thead><tbody id="tbody-i"></tbody></table></div>
+        <div class="table-wrap">
+            <table><thead><tr><th>Data</th><th>Cliente</th><th>Importo</th><th>Azioni</th></tr></thead><tbody id="tbody-i"></tbody></table>
+        </div>
     </section>
 
     <section id="panel-storico" class="panel">
-        <div class="search-box"><input type="text" id="search-input" class="search-input" placeholder="Cerca cliente..." style="width:100%; padding:12px; margin-bottom:15px; background:#000; border:1px solid var(--orange); color:white;" oninput="renderStorico()"></div>
+        <div class="search-box"><input type="text" id="search-input" class="form-input" style="border-color:var(--orange); margin-bottom:15px;" placeholder="Cerca cliente..." oninput="renderStorico()"></div>
         <div id="storico-list"></div>
     </section>
 </main>
@@ -147,17 +177,24 @@ async function fillSels(id) {
     $(id).innerHTML = (data||[]).map(r => `<option value="${r.id}">${r.cliente}</option>`).join('');
 }
 
-// FIX REGISTRAZIONE: SOLO COLONNA 'PRODOTTO'
+// --- LOGICA SALVATAGGIO (CON MODIFICA) ---
+
+window.saveC = async () => {
+    const id = $('c-eid').value;
+    const obj = { data: $('c-data').value, cliente: $('c-cliente').value, valore: parseFloat($('c-valore').value) };
+    loading(true);
+    if(id) await sb.from('contatti').update(obj).eq('id', id);
+    else await sb.from('contatti').insert(obj);
+    resetFormC(); await renderC(); loading(false);
+};
+
 window.saveP = async () => {
     const id = $('p-eid').value;
     const desc = `${$('p-operazione-std').value}: ${$('p-note').value}`;
     const obj = { 
-        data: $('p-data').value, 
-        contatto_id: $('p-commessa').value, 
-        operatore: $('p-operatore').value, 
-        ore_lavorate: parseFloat($('p-ore').value), 
-        avanzamento: parseInt($('p-av').value),
-        prodotto: desc // Usiamo SOLO prodotto, dato che 'operazione' non esiste nel tuo DB
+        data: $('p-data').value, contatto_id: $('p-commessa').value, 
+        operatore: $('p-operatore').value, ore_lavorate: parseFloat($('p-ore').value), 
+        avanzamento: parseInt($('p-av').value), prodotto: desc 
     };
     loading(true);
     if(id) await sb.from('produzione').update(obj).eq('id', id);
@@ -165,29 +202,53 @@ window.saveP = async () => {
     resetFormP(); await renderP(); loading(false);
 };
 
-window.saveC = async () => {
-    const obj = { data: $('c-data').value, cliente: $('c-cliente').value, valore: parseFloat($('c-valore').value) };
-    loading(true); await sb.from('contatti').insert(obj); renderC(); loading(false); resetFormC();
+window.saveI = async () => {
+    const id = $('i-eid').value;
+    const obj = { data: $('i-data').value, contatto_id: $('i-commessa').value, incasso: parseFloat($('i-incasso').value) };
+    loading(true);
+    if(id) await sb.from('uscite').update(obj).eq('id', id);
+    else await sb.from('uscite').insert(obj);
+    resetFormI(); await renderI(); loading(false);
 };
 
-window.saveI = async () => {
-    const obj = { data: $('i-data').value, contatto_id: $('i-commessa').value, incasso: parseFloat($('i-incasso').value) };
-    loading(true); await sb.from('uscite').insert(obj); renderI(); loading(false); resetFormI();
+// --- LOGICA EDIT / DELETE ---
+
+window.editC = async id => {
+    const {data} = await sb.from('contatti').select('*').eq('id',id).single();
+    $('c-eid').value = data.id; $('c-data').value = data.data; $('c-cliente').value = data.cliente; $('c-valore').value = data.valore;
+    $('c-banner').classList.add('show');
 };
+window.editP = async id => {
+    const {data} = await sb.from('produzione').select('*').eq('id',id).single();
+    await fillSels('p-commessa');
+    $('p-eid').value = data.id; $('p-data').value = data.data; $('p-commessa').value = data.contatto_id;
+    $('p-operatore').value = data.operatore; $('p-ore').value = data.ore_lavorate; $('p-av').value = data.avanzamento;
+    $('p-banner').classList.add('show');
+};
+window.editI = async id => {
+    const {data} = await sb.from('uscite').select('*').eq('id',id).single();
+    await fillSels('i-commessa');
+    $('i-eid').value = data.id; $('i-data').value = data.data; $('i-commessa').value = data.contatto_id; $('i-incasso').value = data.incasso;
+    $('i-banner').classList.add('show');
+};
+
+window.delC = async id => { if(confirm('Elimina cliente e dati collegati?')) { await sb.from('contatti').delete().eq('id', id); renderC(); } };
+window.delP = async id => { if(confirm('Elimina riga?')) { await sb.from('produzione').delete().eq('id', id); renderP(); } };
+window.delI = async id => { if(confirm('Elimina incasso?')) { await sb.from('uscite').delete().eq('id', id); renderI(); } };
+
+// --- RENDERING TABELLE ---
 
 async function renderC() {
     const {data} = await sb.from('contatti').select('*').order('id', {ascending:false});
-    $('tbody-c').innerHTML = (data||[]).map(r => `<tr><td>${r.cliente}</td><td>€ ${r.valore}</td><td><button onclick="delC(${r.id})">✕</button></td></tr>`).join('');
+    $('tbody-c').innerHTML = (data||[]).map(r => `<tr><td>${r.cliente}</td><td>€ ${r.valore}</td><td><button class="btn-mod" onclick="editC(${r.id})">Mod</button><button class="btn-del" onclick="delC(${r.id})">✕</button></td></tr>`).join('');
 }
-
 async function renderP() {
     const {data} = await sb.from('produzione').select('*, contatti(cliente)').order('id', {ascending:false});
-    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td><button onclick="delP(${r.id})">✕</button></td></tr>`).join('');
+    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td><button class="btn-mod" onclick="editP(${r.id})">Mod</button><button class="btn-del" onclick="delP(${r.id})">✕</button></td></tr>`).join('');
 }
-
 async function renderI() {
     const {data} = await sb.from('uscite').select('*, contatti(cliente)').order('id', {ascending:false});
-    $('tbody-i').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>€ ${r.incasso}</td><td><button onclick="delI(${r.id})">✕</button></td></tr>`).join('');
+    $('tbody-i').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>€ ${r.incasso}</td><td><button class="btn-mod" onclick="editI(${r.id})">Mod</button><button class="btn-del" onclick="delI(${r.id})">✕</button></td></tr>`).join('');
 }
 
 async function renderStorico() {
@@ -197,25 +258,25 @@ async function renderStorico() {
     const {data: p} = await sb.from('produzione').select('*').order('data');
     const {data: i} = await sb.from('uscite').select('*');
     $('storico-list').innerHTML = c.filter(x => x.cliente.toLowerCase().includes(filter)).map(cl => {
-        const logs = p.filter(l => l.contatto_id === cl.id);
+        const logs = p.filter(lx => lx.contatto_id === cl.id);
         const inc = i.filter(ix => ix.contatto_id === cl.id).reduce((a,b)=>a+b.incasso, 0);
         const avMax = logs.length > 0 ? Math.max(...logs.map(l => l.avanzamento)) : 0;
         return `<div class="s-card">
-            <b>${cl.cliente}</b> [Saldo: € ${cl.valore - inc}]
+            <div style="font-weight:700; font-size:16px; color:#fff">${cl.cliente}</div>
+            <div style="font-size:11px; margin-top:5px">Saldo: € ${cl.valore - inc} / Prev: € ${cl.valore}</div>
             <div class="wip-bar-bg"><div class="wip-bar-fill" style="width:${avMax}%"></div></div>
-            <div class="timeline">${logs.map(l => `<div>${l.data}: ${l.prodotto} (${l.operatore})</div>`).join('')}</div>
+            <div class="timeline">${logs.map(l => `<div class="t-item"><b>${l.data}</b>: ${l.prodotto} (${l.operatore})</div>`).join('')}</div>
         </div>`;
     }).join('');
     loading(false);
 }
 
-window.resetFormC = () => { $('c-eid').value = ''; $('c-cliente').value = ''; $('c-valore').value = ''; $('c-data').value = today(); };
-window.resetFormP = () => { $('p-eid').value = ''; $('p-note').value = ''; $('p-ore').value = ''; $('p-av').value = ''; $('p-data').value = today(); };
-window.resetFormI = () => { $('i-eid').value = ''; $('i-incasso').value = ''; $('i-data').value = today(); };
-window.delC = async id => { if(confirm('Elimina?')) { await sb.from('contatti').delete().eq('id', id); renderC(); } };
-window.delP = async id => { if(confirm('Elimina?')) { await sb.from('produzione').delete().eq('id', id); renderP(); } };
-window.delI = async id => { if(confirm('Elimina?')) { await sb.from('uscite').delete().eq('id', id); renderI(); } };
+// --- RESET FORM ---
+window.resetFormC = () => { $('c-eid').value = ''; $('c-cliente').value = ''; $('c-valore').value = ''; $('c-data').value = today(); $('c-banner').classList.remove('show'); };
+window.resetFormP = () => { $('p-eid').value = ''; $('p-note').value = ''; $('p-ore').value = ''; $('p-av').value = ''; $('p-data').value = today(); $('p-banner').classList.remove('show'); };
+window.resetFormI = () => { $('i-eid').value = ''; $('i-incasso').value = ''; $('i-data').value = today(); $('i-banner').classList.remove('show'); };
 
+// START
 $('c-data').value = today(); $('p-data').value = today(); $('i-data').value = today();
 renderC();
 </script>
