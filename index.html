@@ -1,263 +1,393 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DESANTIS LAB - Sistema Integrato</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0d0d0d; --bg-card: #161616; --bg-input: #1e1e1e;
-            --orange: #e8692a; --text: #d4c4a8; --text-dim: #8a7a60;
-            --border: #2a2a2a; --header-h: 150px;
-        }
-        *, *::after, *::before { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            background: var(--bg); color: var(--text); 
-            font-family: 'Share Tech Mono', monospace; font-size: 14px; 
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-        }
-        .fixed-top {
-            position: fixed; top: 0; left: 0; right: 0;
-            height: var(--header-h); background: var(--bg);
-            z-index: 1000; border-bottom: 2px solid var(--orange);
-        }
-        .header { text-align: center; padding: 15px 10px 5px; }
-        .header-title { font-size: 20px; font-weight: 700; color: var(--orange); letter-spacing: 2px; }
-        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #111; margin-top: 10px; }
-        .tab-btn { 
-            padding: 15px 5px; cursor: pointer; border: none; background: none;
-            color: var(--text-dim); font-family: inherit; font-size: 10px; font-weight: 700;
-            text-transform: uppercase; border-bottom: 3px solid transparent;
-        }
-        .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); background: rgba(232,105,42,0.1); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gestione Lavorazioni Desantis</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* --- STILE BASE E VARIABILI --- */
+:root {
+    --bg: #0d0d0d; --bg-card: #161616; --bg-input: #1e1e1e;
+    --orange: #e8692a; --orange-dim: #a84d1f;
+    --text: #d4c4a8; --text-dim: #8a7a60;
+    --border: #2a2a2a;
+    --header-h: 140px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    background: var(--bg); color: var(--text); 
+    font-family: 'Share Tech Mono', monospace; font-size: 14px; 
+    overflow-x: hidden; height: 100vh;
+}
 
-        main { margin-top: var(--header-h); padding: 15px; flex: 1; overflow-y: auto; padding-bottom: 60px; }
-        .panel { display: none; } .panel.active { display: block; }
+/* --- LAYOUT FISSO (HEADER E TABS) --- */
+.fixed-top {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--header-h); background: var(--bg);
+    z-index: 1000; border-bottom: 2px solid var(--orange);
+}
+.header { text-align: center; padding: 15px 10px 5px; }
+.header-title { font-size: 22px; font-weight: 700; color: var(--orange); letter-spacing: 2px; }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #111; margin-top: 10px; }
+.tab-btn { 
+    padding: 15px 5px; cursor: pointer; border: none; background: none;
+    color: var(--text-dim); font-family: inherit; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; border-bottom: 3px solid transparent;
+}
+.tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); background: rgba(232,105,42,0.05); }
 
-        .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 15px; margin-bottom: 20px; }
-        .edit-banner { display: none; background: rgba(232,105,42,0.2); border: 1px solid var(--orange); padding: 8px; margin-bottom: 10px; color: var(--orange); text-align: center; font-size: 11px; }
-        .edit-banner.show { display: block; }
+/* --- AREA SCORREVOLE (MAIN) --- */
+main { margin-top: var(--header-h); padding: 15px; padding-bottom: 80px; }
+.panel { display: none; } .panel.active { display: block; }
 
-        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
-        .form-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
-        .form-input, .form-select { 
-            width: 100%; background: var(--bg-input); border: 1px solid var(--border); 
-            padding: 10px; color: var(--text); font-family: inherit; border-radius: 3px;
-        }
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .btn { padding: 12px; font-family: inherit; font-weight: 700; border-radius: 3px; cursor: pointer; text-transform: uppercase; border: none; }
-        .btn-save { background: var(--orange); color: white; }
-        .btn-cancel { background: #333; color: #999; }
+/* --- COMPONENTI UI --- */
+.section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 15px; margin-bottom: 20px; }
+.edit-banner { display: none; background: rgba(232,105,42,0.15); border: 1px solid var(--orange); padding: 8px; margin-bottom: 15px; color: var(--orange); font-size: 12px; text-align: center; }
+.edit-banner.show { display: block; }
 
-        .table-wrap { overflow-x: auto; border: 1px solid var(--border); background: var(--bg-card); border-radius: 4px; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 550px; }
-        th { background: #000; color: var(--orange); font-size: 10px; text-align: left; padding: 12px; text-transform: uppercase; }
-        td { padding: 12px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #bbb; }
+.form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+.form-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
+.form-input, .form-select, .form-textarea { 
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border); 
+    border-radius: 3px; padding: 10px; color: var(--text); font-family: inherit; font-size: 13px;
+}
+.form-input:focus { border-color: var(--orange); outline: none; }
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.btn { padding: 12px; font-family: inherit; font-weight: 700; border-radius: 3px; cursor: pointer; text-transform: uppercase; border: none; }
+.btn-save { background: var(--orange); color: white; }
+.btn-cancel { background: #333; color: #999; }
 
-        .btn-mod { color: #6ab0f0; background: none; border: none; cursor: pointer; margin-right: 12px; font-family: inherit; font-size: 11px; text-decoration: underline; }
-        .btn-del { color: #e05050; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 11px; }
+/* --- RICERCA --- */
+.search-box { margin-bottom: 15px; }
+.search-input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--orange-dim); color: var(--orange); border-radius: 4px; font-family: inherit; }
 
-        .s-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
-        .wip-bar-bg { background: #333; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden; }
-        .wip-bar-fill { background: var(--orange); height: 100%; transition: 0.4s; }
-        .timeline { margin: 15px 0; padding-left: 15px; border-left: 1px dashed var(--orange); font-size: 11px; }
-        .s-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
-        .btn-print { background: #222; color: #fff; font-size: 9px; padding: 8px; border-radius: 3px; cursor: pointer; border: 1px solid #444; }
+/* --- TABELLE --- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; }
+table { width: 100%; border-collapse: collapse; min-width: 500px; }
+th { background: #000; color: var(--orange); font-size: 10px; text-align: left; padding: 10px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 10px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #bbb; }
+.btn-mod { color: #6ab0f0; background: none; border: none; cursor: pointer; font-size: 11px; margin-right: 8px; }
+.btn-del { color: #e05050; background: none; border: none; cursor: pointer; font-size: 11px; }
 
-        #loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; color: var(--orange); font-weight: 700; }
-        @media print { .fixed-top, .btn, .btn-row, .edit-banner, .s-actions { display: none !important; } main { margin: 0; padding: 0; } .s-card { border: 1px solid #ccc; page-break-inside: avoid; color: black; background: white; } }
-    </style>
+/* --- STORICO E TIMELINE --- */
+.s-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+.s-card-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+.s-name { font-weight: 700; color: #fff; font-size: 15px; }
+.s-status { font-size: 10px; padding: 2px 6px; border-radius: 2px; text-transform: uppercase; }
+
+.timeline { margin: 15px 0; padding-left: 15px; border-left: 1px dashed var(--border); }
+.timeline-item { position: relative; margin-bottom: 10px; font-size: 11px; }
+.timeline-item::before { content: ''; position: absolute; left: -19px; top: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+.t-date { color: var(--orange); font-weight: 700; margin-right: 5px; }
+.t-op { color: #888; font-style: italic; }
+
+.s-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 15px; border-top: 1px solid #222; padding-top: 12px; }
+.btn-p { font-size: 9px; padding: 6px; background: #222; color: #ddd; border: 1px solid #333; border-radius: 3px; cursor: pointer; text-align: center; }
+
+/* --- LOADING E NOTIFICHE --- */
+#loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
+#notif { position: fixed; bottom: 20px; right: 20px; background: var(--orange); color: white; padding: 10px 20px; border-radius: 4px; opacity: 0; transition: 0.3s; z-index: 3000; pointer-events: none; }
+
+/* --- PRINT STYLES --- */
+@media print {
+    body { background: white; color: black; font-family: sans-serif; }
+    .fixed-top, main > :not(.active), .btn, .btn-row, .edit-banner, .search-box, .btn-mod, .btn-del, .s-actions { display: none !important; }
+    main { margin-top: 0; padding: 0; }
+    .s-card { border: 1px solid #ccc; break-inside: avoid; }
+    .timeline { border-left: 1px solid #ccc; }
+    .timeline-item::before { background: black; }
+}
+</style>
 </head>
 <body>
 
-<div id="loading">SINCRONIZZAZIONE...</div>
+<div id="loading"><div style="width:40px;height:40px;border:3px solid #333;border-top-color:var(--orange);border-radius:50%;animation:spin 1s linear infinite"></div><small>CARICAMENTO...</small></div>
+<div id="notif">Operazione completata</div>
 
 <div class="fixed-top">
     <div class="header">
         <div class="header-title">■ DESANTIS LAB</div>
+        <div style="font-size: 10px; color: var(--text-dim)">GESTIONE AVANZATA LAVORAZIONI</div>
     </div>
     <div class="tabs">
-        <button id="tab-c" class="tab-btn active" onclick="switchTab('contatti')">Clienti</button>
+        <button id="tab-c" class="tab-btn active" onclick="switchTab('contatti')">Contatti</button>
         <button id="tab-p" class="tab-btn" onclick="switchTab('produzione')">Produzione</button>
         <button id="tab-i" class="tab-btn" onclick="switchTab('incassi')">Incassi</button>
         <button id="tab-s" class="tab-btn" onclick="switchTab('storico')">Storico</button>
     </div>
 </div>
 
-<main id="main-content">
+<main>
     <section id="panel-contatti" class="panel active">
         <div class="section-card">
-            <div id="c-banner" class="edit-banner">MODIFICA CLIENTE</div>
+            <div class="edit-banner" id="c-banner">MODALITÀ MODIFICA CLIENTE</div>
             <input type="hidden" id="c-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="c-data" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Cliente</label><input type="text" id="c-cliente" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Preventivo Totale (€)</label><input type="number" id="c-valore" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Cliente</label><input type="text" id="c-cliente" class="form-input" placeholder="Esempio: Rossi Mario"></div>
+            <div class="form-group"><label class="form-label">Lavorazione</label>
+                <select id="c-tipo" class="form-select">
+                    <option value="">-- Seleziona --</option>
+                    <option>Porte Interne</option><option>Portoncino</option><option>Infissi</option><option>Scale</option>
+                    <option>Armadi</option><option>Cucina</option><option>Restauro</option><option>Altro</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Prezzo (€)</label><input type="number" id="c-valore" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Stato</label>
+                <select id="c-stato" class="form-select">
+                    <option>Contatto</option><option>Preventivo</option><option>Lavori in corso</option><option>Consegnato</option><option>Fatturato</option>
+                </select>
+            </div>
             <div class="btn-row">
                 <button class="btn btn-cancel" onclick="resetFormC()">Annulla</button>
-                <button class="btn btn-save" onclick="saveC()">Salva</button>
+                <button class="btn btn-save" onclick="saveC()">Salva Cliente</button>
             </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Valore</th><th>Azioni</th></tr></thead><tbody id="tbody-c"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Prezzo</th><th>Azioni</th></tr></thead><tbody id="tbody-c"></tbody></table></div>
     </section>
 
     <section id="panel-produzione" class="panel">
         <div class="section-card">
-            <div id="p-banner" class="edit-banner">MODIFICA PRODUZIONE</div>
+            <div class="edit-banner" id="p-banner">MODALITÀ MODIFICA LAVORAZIONE</div>
             <input type="hidden" id="p-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="p-data" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Cliente</label><select id="p-commessa" class="form-select"></select></div>
-            <div class="form-group"><label class="form-label">Operazione</label><input type="text" id="p-operazione" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Dettagli</label><input type="text" id="p-prodotto" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Chi?</label><select id="p-operatore" class="form-select"><option>Titolare</option><option>Nazzareno</option></select></div>
-            <div class="form-group"><label class="form-label">Ore</label><input type="number" id="p-ore" class="form-input" step="0.5"></div>
-            <div class="form-group"><label class="form-label">% Avanzamento</label><input type="number" id="p-av" class="form-input"></div>
-            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormP()">Annulla</button><button class="btn btn-save" onclick="saveP()">Registra</button></div>
+            <div class="form-group"><label class="form-label">Seleziona Cliente</label><select id="p-commessa" class="form-select"></select></div>
+            <div class="form-group"><label class="form-label">Operazione Svolta</label><input type="text" id="p-operazione" class="form-input" placeholder="Es: Verniciatura ante"></div>
+            <div class="form-group"><label class="form-label">Operatore</label>
+                <select id="p-operatore" class="form-select">
+                    <option value="">-- Seleziona --</option>
+                    <option>Titolare Desantis</option><option>Dipendente Nazzareno</option>
+                    <option>Dipendente B</option><option>Terzista con fattura</option><option>Altro</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Ore Lavoro</label><input type="number" id="p-ore" class="form-input" step="0.5"></div>
+            <div class="form-group"><label class="form-label">% Avanzamento Odierno</label><input type="number" id="p-av" class="form-input" placeholder="0-100"></div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="resetFormP()">Annulla</button>
+                <button class="btn btn-save" onclick="saveP()">Salva Registro</button>
+            </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Operazione</th><th>Ore</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table></div>
     </section>
 
     <section id="panel-incassi" class="panel">
         <div class="section-card">
-            <div id="i-banner" class="edit-banner">MODIFICA INCASSO</div>
+            <div class="edit-banner" id="i-banner">MODALITÀ MODIFICA INCASSO</div>
             <input type="hidden" id="i-eid">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="i-data" class="form-input"></div>
             <div class="form-group"><label class="form-label">Cliente</label><select id="i-commessa" class="form-select"></select></div>
-            <div class="form-group"><label class="form-label">Importo (€)</label><input type="number" id="i-incasso" class="form-input"></div>
-            <div class="btn-row"><button class="btn btn-cancel" onclick="resetFormI()">Annulla</button><button class="btn btn-save" onclick="saveI()">Registra</button></div>
+            <div class="form-group"><label class="form-label">Importo Incassato (€)</label><input type="number" id="i-incasso" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Consegnato?</label>
+                <select id="i-finito" class="form-select"><option value="false">In lavorazione</option><option value="true">SÌ - Consegnato</option></select>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-cancel" onclick="resetFormI()">Annulla</button>
+                <button class="btn btn-save" onclick="saveI()">Registra</button>
+            </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Importo</th><th>Azioni</th></tr></thead><tbody id="tbody-i"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Importo</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="tbody-i"></tbody></table></div>
     </section>
 
     <section id="panel-storico" class="panel">
-        <input type="text" id="search-input" class="form-input" style="border-color:var(--orange); margin-bottom:15px;" placeholder="Cerca cliente..." oninput="renderStorico()">
+        <div class="search-box">
+            <input type="text" id="search-input" class="search-input" placeholder="Cerca cliente..." oninput="renderStorico()">
+        </div>
+        <button class="btn btn-save" style="width:100%; margin-bottom: 20px;" onclick="printGenerale()">⎙ STAMPA RAPPORTO GENERALE</button>
         <div id="storico-list"></div>
     </section>
 </main>
 
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-const sb = createClient('https://uyzfhilwtikrjqgylxwg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5emZoaWx3dGlrcmpxZ3lseHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTYwNDcsImV4cCI6MjA5MDg5MjA0N30._tmP4XpZnK9Wmc3AkkZd52hM_xrmMHIK2EjGTB3xYfQ');
+const SUPA_URL = 'https://uyzfhilwtikrjqgylxwg.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5emZoaWx3dGlrcmpxZ3lseHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTYwNDcsImV4cCI6MjA5MDg5MjA0N30._tmP4XpZnK9Wmc3AkkZd52hM_xrmMHIK2EjGTB3xYfQ';
+const sb = createClient(SUPA_URL, SUPA_KEY);
 
+// --- UTILITY ---
 const $ = id => document.getElementById(id);
+const fmt = n => Number(n||0).toLocaleString('it-IT',{minimumFractionDigits:2});
 const loading = on => $('loading').style.display = on ? 'flex' : 'none';
-const today = () => new Date().toISOString().split('T')[0];
+const notify = m => { const n = $('notif'); n.textContent = '✓ ' + m; n.style.opacity = 1; setTimeout(()=>n.style.opacity=0, 2500); };
+const getToday = () => new Date().toISOString().split('T')[0];
 
-window.switchTab = async (n) => {
-    document.querySelectorAll('.panel, .tab-btn').forEach(el => el.classList.remove('active'));
-    $('panel-'+n).classList.add('active'); $('tab-'+n.charAt(0)).classList.add('active');
-    if(n==='contatti') renderC();
-    if(n==='produzione') { await fillSels('p-commessa'); renderP(); }
-    if(n==='incassi') { await fillSels('i-commessa'); renderI(); }
-    if(n==='storico') renderStorico();
+// --- NAVIGATION ---
+window.switchTab = async (name) => {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    $('panel-'+name).classList.add('active');
+    $('tab-'+name.charAt(0)).classList.add('active');
+    
+    if(name === 'contatti') await renderC();
+    if(name === 'produzione') { await fillSelects('p-commessa'); await renderP(); }
+    if(name === 'incassi') { await fillSelects('i-commessa'); await renderI(); }
+    if(name === 'storico') await renderStorico();
 };
 
-async function fillSels(id) {
-    const {data} = await sb.from('contatti').select('id,cliente').order('cliente');
-    $(id).innerHTML = (data||[]).map(r => `<option value="${r.id}">${r.cliente}</option>`).join('');
+async function fillSelects(id) {
+    const {data} = await sb.from('contatti').select('id,cliente,tipo_lavoro').order('cliente');
+    $(id).innerHTML = '<option value="">-- Seleziona --</option>' + 
+        (data||[]).map(r => `<option value="${r.id}">${r.cliente} (${r.tipo_lavoro})</option>`).join('');
 }
 
+// --- LOGICA CONTATTI ---
 window.saveC = async () => {
     const id = $('c-eid').value;
-    const obj = { data: $('c-data').value, cliente: $('c-cliente').value, valore: parseFloat($('c-valore').value) };
+    const obj = { data: $('c-data').value, cliente: $('c-cliente').value, tipo_lavoro: $('c-tipo').value, valore: parseFloat($('c-valore').value), stato: $('c-stato').value };
+    if(!obj.cliente) return;
     loading(true);
     if(id) await sb.from('contatti').update(obj).eq('id', id);
     else await sb.from('contatti').insert(obj);
-    resetFormC(); renderC(); loading(false);
+    resetFormC(); await renderC(); loading(false); notify('Contatto salvato');
 };
 
+window.editC = async (id) => {
+    const {data} = await sb.from('contatti').select('*').eq('id', id).single();
+    $('c-eid').value = data.id; $('c-data').value = data.data; $('c-cliente').value = data.cliente;
+    $('c-tipo').value = data.tipo_lavoro; $('c-valore').value = data.valore; $('c-stato').value = data.stato;
+    $('c-banner').classList.add('show'); switchTab('contatti');
+};
+
+window.resetFormC = () => { $('c-eid').value = ''; $('c-cliente').value = ''; $('c-valore').value = ''; $('c-banner').classList.remove('show'); $('c-data').value = getToday(); };
+
+async function renderC() {
+    const {data} = await sb.from('contatti').select('*').order('data', {ascending:false});
+    $('tbody-c').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>€ ${fmt(r.valore)}</td><td><button class="btn-mod" onclick="editC(${r.id})">Mod</button><button class="btn-del" onclick="delC(${r.id})">✕</button></td></tr>`).join('');
+}
+window.delC = async id => { if(confirm('Eliminare cliente?')) { await sb.from('contatti').delete().eq('id', id); renderC(); } };
+
+// --- LOGICA PRODUZIONE ---
 window.saveP = async () => {
     const id = $('p-eid').value;
-    const obj = { 
-        data: $('p-data').value, contatto_id: $('p-commessa').value, 
-        operazione: $('p-operazione').value, prodotto: $('p-prodotto').value,
-        operatore: $('p-operatore').value, ore_lavorate: parseFloat($('p-ore').value), 
-        avanzamento: parseInt($('p-av').value)
-    };
+    const obj = { data: $('p-data').value, contatto_id: $('p-commessa').value, prodotto: $('p-operazione').value, operatore: $('p-operatore').value, ore_lavorate: parseFloat($('p-ore').value), avanzamento: parseInt($('p-av').value) };
     loading(true);
     if(id) await sb.from('produzione').update(obj).eq('id', id);
     else await sb.from('produzione').insert(obj);
-    resetFormP(); renderP(); loading(false);
-};
-
-window.saveI = async () => {
-    const id = $('i-eid').value;
-    const obj = { data: $('i-data').value, contatto_id: $('i-commessa').value, incasso: parseFloat($('i-incasso').value) };
-    loading(true);
-    if(id) await sb.from('uscite').update(obj).eq('id', id);
-    else await sb.from('uscite').insert(obj);
-    resetFormI(); renderI(); loading(false);
-};
-
-window.editC = async id => {
-    const {data} = await sb.from('contatti').select('*').eq('id',id).single();
-    $('c-eid').value = data.id; $('c-data').value = data.data; $('c-cliente').value = data.cliente; $('c-valore').value = data.valore;
-    $('c-banner').classList.add('show');
+    resetFormP(); await renderP(); loading(false); notify('Registro salvato');
 };
 
 window.editP = async id => {
-    const {data} = await sb.from('produzione').select('*').eq('id',id).single();
-    await fillSels('p-commessa');
+    const {data} = await sb.from('produzione').select('*').eq('id', id).single();
+    await fillSelects('p-commessa');
     $('p-eid').value = data.id; $('p-data').value = data.data; $('p-commessa').value = data.contatto_id;
-    $('p-operazione').value = data.operazione; $('p-prodotto').value = data.prodotto;
-    $('p-operatore').value = data.operatore; $('p-ore').value = data.ore_lavorate; $('p-av').value = data.avanzamento;
-    $('p-banner').classList.add('show');
+    $('p-operazione').value = data.prodotto; $('p-operatore').value = data.operatore; $('p-ore').value = data.ore_lavorate;
+    $('p-av').value = data.avanzamento; $('p-banner').classList.add('show'); switchTab('produzione');
+};
+
+window.resetFormP = () => { $('p-eid').value = ''; $('p-operazione').value = ''; $('p-ore').value = ''; $('p-av').value = ''; $('p-banner').classList.remove('show'); $('p-data').value = getToday(); };
+
+async function renderP() {
+    const {data} = await sb.from('produzione').select('*, contatti(cliente)').order('data', {ascending:false});
+    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td>${r.ore_lavorate}h</td><td><button class="btn-mod" onclick="editP(${r.id})">Mod</button><button class="btn-del" onclick="delP(${r.id})">✕</button></td></tr>`).join('');
+}
+window.delP = async id => { if(confirm('Eliminare riga?')) { await sb.from('produzione').delete().eq('id', id); renderP(); } };
+
+// --- LOGICA INCASSI ---
+window.saveI = async () => {
+    const id = $('i-eid').value;
+    const obj = { data: $('i-data').value, contatto_id: $('i-commessa').value, incasso: parseFloat($('i-incasso').value), finito: $('i-finito').value === 'true' };
+    loading(true);
+    if(id) await sb.from('uscite').update(obj).eq('id', id);
+    else await sb.from('uscite').insert(obj);
+    resetFormI(); await renderI(); loading(false); notify('Incasso registrato');
 };
 
 window.editI = async id => {
-    const {data} = await sb.from('uscite').select('*').eq('id',id).single();
-    await fillSels('i-commessa');
-    $('i-eid').value = data.id; $('i-data').value = data.data; $('i-commessa').value = data.contatto_id; $('i-incasso').value = data.incasso;
-    $('i-banner').classList.add('show');
+    const {data} = await sb.from('uscite').select('*').eq('id', id).single();
+    await fillSelects('i-commessa');
+    $('i-eid').value = data.id; $('i-data').value = data.data; $('i-commessa').value = data.contatto_id;
+    $('i-incasso').value = data.incasso; $('i-finito').value = data.finito.toString();
+    $('i-banner').classList.add('show'); switchTab('incassi');
 };
 
-window.delC = async id => { if(confirm('Elimina?')) { await sb.from('contatti').delete().eq('id', id); renderC(); } };
-window.delP = async id => { if(confirm('Elimina?')) { await sb.from('produzione').delete().eq('id', id); renderP(); } };
-window.delI = async id => { if(confirm('Elimina?')) { await sb.from('uscite').delete().eq('id', id); renderI(); } };
+window.resetFormI = () => { $('i-eid').value = ''; $('i-incasso').value = ''; $('i-banner').classList.remove('show'); $('i-data').value = getToday(); };
 
-async function renderC() {
-    const {data} = await sb.from('contatti').select('*').order('id', {ascending:false});
-    $('tbody-c').innerHTML = (data||[]).map(r => `<tr><td>${r.cliente}</td><td>€ ${r.valore}</td><td><button class="btn-mod" onclick="editC(${r.id})">Mod</button><button class="btn-del" onclick="delC(${r.id})">✕</button></td></tr>`).join('');
-}
-async function renderP() {
-    const {data} = await sb.from('produzione').select('*, contatti(cliente)').order('id', {ascending:false});
-    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.operazione}</td><td><button class="btn-mod" onclick="editP(${r.id})">Mod</button><button class="btn-del" onclick="delP(${r.id})">✕</button></td></tr>`).join('');
-}
 async function renderI() {
-    const {data} = await sb.from('uscite').select('*, contatti(cliente)').order('id', {ascending:false});
-    $('tbody-i').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>€ ${r.incasso}</td><td><button class="btn-mod" onclick="editI(${r.id})">Mod</button><button class="btn-del" onclick="delI(${r.id})">✕</button></td></tr>`).join('');
+    const {data} = await sb.from('uscite').select('*, contatti(cliente)').order('data', {ascending:false});
+    $('tbody-i').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>€ ${fmt(r.incasso)}</td><td>${r.finito ? 'CONSEGNATO' : '...'}</td><td><button class="btn-mod" onclick="editI(${r.id})">Mod</button><button class="btn-del" onclick="delI(${r.id})">✕</button></td></tr>`).join('');
 }
+window.delI = async id => { if(confirm('Eliminare incasso?')) { await sb.from('uscite').delete().eq('id', id); renderI(); } };
 
+// --- STORICO E STAMPE ---
 async function renderStorico() {
     loading(true);
-    const filter = $('search-input').value.toLowerCase();
-    const {data: c} = await sb.from('contatti').select('*').order('cliente');
-    const {data: p} = await sb.from('produzione').select('*').order('data');
-    const {data: i} = await sb.from('uscite').select('*');
-    $('storico-list').innerHTML = c.filter(x => x.cliente.toLowerCase().includes(filter)).map(cl => {
-        const logs = p.filter(lx => lx.contatto_id === cl.id);
-        const inc = i.filter(ix => ix.contatto_id === cl.id).reduce((a,b)=>a+b.incasso, 0);
-        const avMax = logs.length > 0 ? Math.max(...logs.map(l => l.avanzamento)) : 0;
-        return `<div class="s-card">
-            <div style="font-weight:700; font-size:16px; color:#fff">${cl.cliente}</div>
-            <div style="font-size:11px; margin-top:5px">Saldo: € ${cl.valore - inc} / Prev: € ${cl.valore}</div>
-            <div class="wip-bar-bg"><div class="wip-bar-fill" style="width:${avMax}%"></div></div>
-            <div class="timeline">${logs.map(l => `<div style="margin-bottom:5px">${l.data}: ${l.operazione} (${l.operatore})</div>`).join('')}</div>
+    const query = $('search-input').value.toLowerCase();
+    const {data: contatti} = await sb.from('contatti').select('*').order('cliente');
+    const {data: prod} = await sb.from('produzione').select('*').order('data');
+    const {data: incassi} = await sb.from('uscite').select('*');
+    
+    const filtered = contatti.filter(c => c.cliente.toLowerCase().includes(query));
+    
+    $('storico-list').innerHTML = filtered.map(c => {
+        const pLoc = prod.filter(p => p.contatto_id === c.id);
+        const iLoc = incassi.filter(i => i.contatto_id === c.id);
+        const oreTot = pLoc.reduce((acc, curr) => acc + curr.ore_lavorate, 0);
+        const incTot = iLoc.reduce((acc, curr) => acc + curr.incasso, 0);
+        const avMax = pLoc.length > 0 ? Math.max(...pLoc.map(p => p.avanzamento)) : 0;
+        
+        return `
+        <div class="s-card">
+            <div class="s-card-header">
+                <div class="s-name">${c.cliente}</div>
+                <div class="s-status" style="background:rgba(232,105,42,0.2); color:var(--orange)">${c.stato}</div>
+            </div>
+            <div style="font-size:11px; margin-bottom:10px">${c.tipo_lavoro} - Tot ore: ${oreTot}h</div>
+            <div style="background:#333; height:4px; width:100%; border-radius:2px; margin: 10px 0;">
+                <div style="background:var(--orange); height:100%; width:${avMax}%; border-radius:2px"></div>
+            </div>
+            <div class="timeline">
+                ${pLoc.map(p => `<div class="timeline-item"><span class="t-date">${p.data}</span> <span class="t-op">${p.prodotto}</span> (${p.operatore})</div>`).join('')}
+            </div>
+            <div style="font-size:12px; color:white; font-weight:700">Incassato: € ${fmt(incTot)} / € ${fmt(c.valore)}</div>
             <div class="s-actions">
-                <button class="btn-print" onclick="window.print()">Stampa Generale</button>
-                <button class="btn-print" style="color:var(--orange)" onclick="editC(${cl.id})">Modifica</button>
+                <button class="btn-p" onclick="printSingolo(${c.id}, 'sintetica')">SINTETICA</button>
+                <button class="btn-p" onclick="printSingolo(${c.id}, 'tecnica')">TECNICA</button>
+                <button class="btn-p" onclick="editC(${c.id})">MODIFICA</button>
             </div>
         </div>`;
     }).join('');
     loading(false);
 }
 
-window.resetFormC = () => { $('c-eid').value = ''; $('c-cliente').value = ''; $('c-valore').value = ''; $('c-banner').classList.remove('show'); $('c-data').value = today(); };
-window.resetFormP = () => { $('p-eid').value = ''; $('p-operazione').value = ''; $('p-prodotto').value = ''; $('p-ore').value = ''; $('p-av').value = ''; $('p-banner').classList.remove('show'); $('p-data').value = today(); };
-window.resetFormI = () => { $('i-eid').value = ''; $('i-incasso').value = ''; $('i-banner').classList.remove('show'); $('i-data').value = today(); };
+window.printSingolo = async (id, tipo) => {
+    const {data:c} = await sb.from('contatti').select('*').eq('id',id).single();
+    const {data:p} = await sb.from('produzione').select('*').eq('contatto_id',id).order('data');
+    const {data:i} = await sb.from('uscite').select('*').eq('contatto_id',id);
+    
+    let h = `<html><body style="font-family:sans-serif; padding:40px"><h1>${c.cliente} - ${tipo.toUpperCase()}</h1>`;
+    h += `<p>Lavorazione: ${c.tipo_lavoro} | Valore: € ${fmt(c.valore)}</p>`;
+    
+    if(tipo === 'tecnica') {
+        h += `<h3>DIARIO TECNICO LAVORAZIONI</h3><table border="1" width="100%" cellpadding="10" style="border-collapse:collapse"><thead><tr><th>Data</th><th>Operatore</th><th>Lavoro</th><th>Ore</th></tr></thead><tbody>`;
+        p.forEach(r => h += `<tr><td>${r.data}</td><td>${r.operatore}</td><td>${r.prodotto}</td><td>${r.ore_lavorate}</td></tr>`);
+        h += `</tbody></table>`;
+    } else {
+        const ore = p.reduce((a,b)=>a+b.ore_lavorate,0);
+        const inc = i.reduce((a,b)=>a+b.incasso,0);
+        h += `<div style="border:2px solid black; padding:20px; margin-top:20px">`;
+        h += `<p><b>STATO AVANZAMENTO:</b> ${p.length ? p[p.length-1].avanzamento : 0}%</p>`;
+        h += `<p><b>ORE TOTALI IMPIEGATE:</b> ${ore}h</p>`;
+        h += `<p><b>TOTALE INCASSATO:</b> € ${fmt(inc)}</p>`;
+        h += `<p><b>SALDO DA RICEVERE:</b> € ${fmt(c.valore - inc)}</p></div>`;
+    }
+    h += `<br><button onclick="window.print()">STAMPA PDF</button></body></html>`;
+    const w = window.open(); w.document.write(h); w.document.close();
+};
 
-$('c-data').value = today(); $('p-data').value = today(); $('i-data').value = today();
+window.printGenerale = async () => {
+    const {data:c} = await sb.from('contatti').select('*').order('cliente');
+    let h = `<html><body style="font-family:sans-serif; padding:20px"><h2>RAPPORTO GENERALE FALEGNAMERIA</h2><table border="1" width="100%" cellpadding="8" style="border-collapse:collapse"><thead><tr><th>Cliente</th><th>Lavoro</th><th>Valore</th><th>Stato</th></tr></thead><tbody>`;
+    c.forEach(r => h += `<tr><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>€ ${fmt(r.valore)}</td><td>${r.stato}</td></tr>`);
+    h += `</tbody></table><br><button onclick="window.print()">STAMPA RAPPORTO</button></body></html>`;
+    const w = window.open(); w.document.write(h); w.document.close();
+};
+
+// Start
+$('c-data').value = getToday();
+$('p-data').value = getToday();
+$('i-data').value = getToday();
 renderC();
 </script>
+
+@keyframes spin { to { transform: rotate(360deg); } }
 </body>
 </html>
