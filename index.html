@@ -25,7 +25,6 @@ body { background: var(--bg); color: var(--text); font-family: var(--mono); font
 main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
 .panel { display: none; } .panel.active { display: block; }
 .section-card { background: var(--card); border: 1px solid var(--border2); border-radius: 4px; padding: 20px; margin-bottom: 16px; }
-.section-card.editing { border-color: rgba(232,105,42,.5); }
 .section-title { font-size: 14px; font-weight: 700; color: var(--orange); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border2); }
 .edit-banner { display: none; background: rgba(232,105,42,.1); border: 1px solid rgba(232,105,42,.35); border-radius: 3px; padding: 8px 14px; margin-bottom: 14px; font-size: 12px; color: var(--orange); }
 .edit-banner.show { display: block; }
@@ -34,16 +33,12 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text2); }
 .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 3px; padding: 10px 12px; color: var(--text); font-family: var(--mono); font-size: 13px; }
-.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); background: #2e1c0a; }
-.form-textarea { resize: vertical; min-height: 72px; }
 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
 .btn { padding: 12px; font-family: var(--mono); font-size: 13px; font-weight: 700; text-transform: uppercase; border-radius: 3px; cursor: pointer; border: 1px solid var(--border2); }
 .btn-temp { background: var(--bg3); color: var(--text2); }
-.btn-temp:hover { border-color: var(--text2); color: var(--text); }
 .btn-save { background: var(--orange); color: #fff; border-color: var(--orange); }
-.btn-save:hover { background: var(--orange2); }
 .btn-mod { background: #0c1e30; color: #60a8d8; border: 1px solid #1a3850; font-size: 11px; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-.btn-del { background: #3a1010; color: #e05050; border: 1px solid #5a2020; font-size: 11px; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+.btn-del { background: #3a1010; color: #e05050; border: 1px solid #5a2020; font-size: 11px; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 4px; }
 .btn-pdf { background: #1a2a40; color: #70b0e8; border: 1px solid #2a4060; font-size: 10px; padding: 6px 10px; border-radius: 3px; cursor: pointer; }
 .table-wrap { border: 1px solid var(--border2); border-radius: 3px; overflow: hidden; }
 table { width: 100%; border-collapse: collapse; }
@@ -94,17 +89,17 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--te
 </div>
 
 <div class="tabs">
-<button class="tab-btn active" onclick="switchTab('contatti',this)">■ CONTATTI</button>
-<button class="tab-btn" onclick="switchTab('produzione',this)">■ PRODUZIONE</button>
-<button class="tab-btn" onclick="switchTab('incassi',this)">■ INCASSI</button>
-<button class="tab-btn" onclick="switchTab('storico',this)">■ STORICO</button>
+<button id="btn-tab-contatti" class="tab-btn active" onclick="switchTab('contatti',this)">■ CONTATTI</button>
+<button id="btn-tab-produzione" class="tab-btn" onclick="switchTab('produzione',this)">■ PRODUZIONE</button>
+<button id="btn-tab-incassi" class="tab-btn" onclick="switchTab('incassi',this)">■ INCASSI</button>
+<button id="btn-tab-storico" class="tab-btn" onclick="switchTab('storico',this)">■ STORICO</button>
 </div>
 
 <main>
 <div id="panel-contatti" class="panel active">
     <div class="section-card" id="c-card">
-        <div class="section-title">■ NUOVO CONTATTO</div>
-        <div class="edit-banner" id="c-banner">✎ Modalità modifica</div>
+        <div class="section-title">■ GESTIONE CONTATTO</div>
+        <div class="edit-banner" id="c-banner">✎ MODALITÀ MODIFICA ATTIVA</div>
         <input type="hidden" id="c-eid">
         <div class="form-row">
             <div class="form-group"><label class="form-label">Data inserimento</label><input type="date" id="c-data" class="form-input"></div>
@@ -113,7 +108,7 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--te
         <div class="form-row">
             <div class="form-group"><label class="form-label">Tipo di lavorazione</label>
                 <select id="c-tipo" class="form-select">
-                    <option value="">-- Seleziona Lavorazione --</option>
+                    <option value="">-- Seleziona --</option>
                     <option>Porte Interne</option>
                     <option>Portoncino Ingresso</option>
                     <option>Finestre / Infissi</option>
@@ -145,33 +140,32 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--te
             <button class="btn btn-save" id="c-sbtn" onclick="saveC()">SALVA CONTATTO</button>
         </div>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Lavorazione</th><th>Valore</th><th>Stato</th><th></th></tr></thead><tbody id="tbody-c"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Lavorazione</th><th>Valore</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="tbody-c"></tbody></table></div>
 </div>
 
 <div id="panel-produzione" class="panel">
     <div class="section-card" id="p-card">
-        <div class="section-title">■ REGISTRO GIORNALIERO PRODUZIONE</div>
+        <div class="section-title">■ REGISTRO PRODUZIONE</div>
+        <div class="edit-banner" id="p-banner">✎ MODALITÀ MODIFICA ATTIVA</div>
         <input type="hidden" id="p-eid">
         <div class="form-row">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="p-data" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Seleziona Cliente</label><select id="p-commessa" class="form-select"><option value="">-- Caricamento... --</option></select></div>
+            <div class="form-group"><label class="form-label">Seleziona Cliente</label><select id="p-commessa" class="form-select"></select></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label class="form-label">Cosa è stato fatto oggi?</label><input type="text" id="p-prodotto" class="form-input" placeholder="Es. Montaggio cerniere"></div>
+            <div class="form-group"><label class="form-label">Operazione svolta</label><input type="text" id="p-prodotto" class="form-input" placeholder="Es. Levigatura ante"></div>
             <div class="form-group"><label class="form-label">Operatore</label>
                 <select id="p-operatore" class="form-select">
                     <option value="">-- Seleziona --</option>
                     <option>Titolare Desantis</option>
                     <option>Dipendente Nazzareno</option>
-                    <option>Dipendente B</option>
-                    <option>Terzista con fattura</option>
-                    <option>Altro</option>
+                    <option>Terzista</option>
                 </select>
             </div>
         </div>
         <div class="form-row">
             <div class="form-group"><label class="form-label">Ore impiegate</label><input type="number" id="p-ore" class="form-input" step="0.5"></div>
-            <div class="form-group"><label class="form-label">% Avanzamento Odierno</label><input type="number" id="p-av" class="form-input" placeholder="0-100"></div>
+            <div class="form-group"><label class="form-label">% Avanzamento Giorno</label><input type="number" id="p-av" class="form-input" placeholder="0-100"></div>
         </div>
         <div class="form-row full"><div class="form-group"><label class="form-label">Note Tecniche</label><textarea id="p-note" class="form-textarea"></textarea></div></div>
         <div class="btn-row">
@@ -180,14 +174,15 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--te
         </div>
     </div>
     <div class="table-wrap">
-        <table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Operatore</th><th>Ore</th><th>% Giorno</th><th>% Tot</th><th></th></tr></thead><tbody id="tbody-p"></tbody></table>
+        <table><thead><tr><th>Data</th><th>Cliente</th><th>Lavoro</th><th>Operatore</th><th>Ore</th><th>% Giorno</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table>
         <div class="total-bar">Totale ore registrate: <span id="tot-ore">0.0</span>h</div>
     </div>
 </div>
 
 <div id="panel-incassi" class="panel">
     <div class="section-card">
-        <div class="section-title">■ STATO CONSEGNE E INCASSI</div>
+        <div class="section-title">■ REGISTRO INCASSI</div>
+        <div class="edit-banner" id="i-banner">✎ MODALITÀ MODIFICA ATTIVA</div>
         <input type="hidden" id="i-eid">
         <div class="form-row">
             <div class="form-group"><label class="form-label">Data</label><input type="date" id="i-data" class="form-input"></div>
@@ -203,16 +198,15 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--te
             <button class="btn btn-save" id="i-sbtn" onclick="saveI()">REGISTRA INCASSO</button>
         </div>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Stato</th><th>Consegna</th><th>Incasso</th><th></th></tr></thead><tbody id="tbody-i"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Stato</th><th>Incasso</th><th>Azioni</th></tr></thead><tbody id="tbody-i"></tbody></table></div>
 </div>
 
 <div id="panel-storico" class="panel">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <div class="section-title" style="margin-bottom:0">■ RIEPILOGO GENERALE COMMESSE</div>
-        <button class="btn btn-save" onclick="printGenerale()" style="padding: 8px 16px;">⎙ STAMPA RAPPORTO GENERALE</button>
+        <div class="section-title" style="margin-bottom:0">■ RIEPILOGO COMMESSE</div>
+        <button class="btn btn-save" onclick="printGenerale()" style="padding: 8px 16px;">⎙ STAMPA RAPPORTO</button>
     </div>
     <div id="storico-grid" class="storico-grid"></div>
-    <div id="storico-empty" style="display:none;text-align:center;padding:60px;color:var(--text3)">Nessun dato in archivio</div>
 </div>
 </main>
 
@@ -239,7 +233,7 @@ window.switchTab=async(name,el)=>{
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('panel-'+name).classList.add('active');
-    el.classList.add('active');
+    if(el) el.classList.add('active');
     if(name==='produzione'){ await fillCommesse('p-commessa'); await renderP(); }
     if(name==='incassi'){ await fillCommesse('i-commessa'); await renderI(); }
     if(name==='storico') await renderStorico();
@@ -252,131 +246,201 @@ async function fillCommesse(selId){
         (data||[]).map(r=>`<option value="${r.id}">${r.cliente} (${r.tipo_lavoro})</option>`).join('');
 }
 
-// LOGICA CONTATTI
+// --- LOGICA CONTATTI ---
 window.saveC=async()=>{
-    const data=document.getElementById('c-data').value;
-    const cliente=document.getElementById('c-cliente').value.trim();
-    const tipo_lavoro=document.getElementById('c-tipo').value;
-    const valore=parseFloat(document.getElementById('c-valore').value)||0;
-    const stato=document.getElementById('c-stato').value;
-    if(!cliente || !tipo_lavoro){ alert('Inserire Cliente e Tipo Lavoro'); return; }
+    const id = document.getElementById('c-eid').value;
+    const payload = {
+        data: document.getElementById('c-data').value,
+        cliente: document.getElementById('c-cliente').value.trim(),
+        tipo_lavoro: document.getElementById('c-tipo').value,
+        valore: parseFloat(document.getElementById('c-valore').value)||0,
+        stato: document.getElementById('c-stato').value
+    };
+    if(!payload.cliente) return alert('Inserire Nome Cliente');
     loading(true);
-    await sb.from('contatti').insert({data,cliente,tipo_lavoro,valore,stato});
-    notify('Contatto salvato');
-    resetC(); await renderC();
+    if(id) {
+        await sb.from('contatti').update(payload).eq('id', id);
+        notify('Contatto aggiornato');
+    } else {
+        await sb.from('contatti').insert(payload);
+        notify('Contatto salvato');
+    }
+    resetC(); await renderC(); loading(false);
+};
+
+window.editC=async(id)=>{
+    loading(true);
+    const {data:r} = await sb.from('contatti').select('*').eq('id',id).single();
+    if(r){
+        document.getElementById('c-eid').value = r.id;
+        document.getElementById('c-data').value = r.data;
+        document.getElementById('c-cliente').value = r.cliente;
+        document.getElementById('c-tipo').value = r.tipo_lavoro;
+        document.getElementById('c-valore').value = r.valore;
+        document.getElementById('c-stato').value = r.stato;
+        document.getElementById('c-banner').classList.add('show');
+        document.getElementById('c-sbtn').textContent = 'AGGIORNA CONTATTO';
+        switchTab('contatti', document.getElementById('btn-tab-contatti'));
+    }
     loading(false);
 };
 
-window.resetC=()=>{ document.getElementById('c-cliente').value=''; document.getElementById('c-valore').value=''; };
+window.resetC=()=>{
+    document.getElementById('c-eid').value='';
+    document.getElementById('c-cliente').value='';
+    document.getElementById('c-valore').value='';
+    document.getElementById('c-banner').classList.remove('show');
+    document.getElementById('c-sbtn').textContent = 'SALVA CONTATTO';
+};
 
 async function renderC(){
     const {data}=await sb.from('contatti').select('*').order('data',{ascending:false});
-    const tb=document.getElementById('tbody-c');
-    tb.innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>€ ${fmt(r.valore)}</td><td><span class="pill ${pillCls(r.stato)}">${r.stato}</span></td><td><button class="btn-del" onclick="delC(${r.id})">Elimina</button></td></tr>`).join('');
+    document.getElementById('tbody-c').innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>€ ${fmt(r.valore)}</td><td><span class="pill ${pillCls(r.stato)}">${r.stato}</span></td><td><button class="btn-mod" onclick="editC(${r.id})">Modifica</button><button class="btn-del" onclick="delC(${r.id})">✕</button></td></tr>`).join('');
 }
 
-window.delC=async(id)=>{ if(confirm('Eliminare?')){ loading(true); await sb.from('contatti').delete().eq('id',id); await renderC(); loading(false); } };
+window.delC=async(id)=>{ if(confirm('Eliminare cliente e relativi dati?')){ loading(true); await sb.from('contatti').delete().eq('id',id); await renderC(); loading(false); } };
 
-// LOGICA PRODUZIONE
+// --- LOGICA PRODUZIONE ---
 window.saveP=async()=>{
-    const data=document.getElementById('p-data').value;
-    const contatto_id=parseInt(document.getElementById('p-commessa').value);
-    const prodotto=document.getElementById('p-prodotto').value;
-    const operatore=document.getElementById('p-operatore').value;
-    const ore_lavorate=parseFloat(document.getElementById('p-ore').value)||0;
-    const avanzamento_giorno=parseInt(document.getElementById('p-av').value)||0;
-    if(!contatto_id || !operatore){ alert('Seleziona cliente e operatore'); return; }
+    const id = document.getElementById('p-eid').value;
+    const payload = {
+        data: document.getElementById('p-data').value,
+        contatto_id: parseInt(document.getElementById('p-commessa').value),
+        prodotto: document.getElementById('p-prodotto').value,
+        operatore: document.getElementById('p-operatore').value,
+        ore_lavorate: parseFloat(document.getElementById('p-ore').value)||0,
+        avanzamento: parseInt(document.getElementById('p-av').value)||0,
+        note: document.getElementById('p-note').value
+    };
     loading(true);
-    const {data:esistenti}=await sb.from('produzione').select('avanzamento').eq('contatto_id',contatto_id).order('avanzamento',{ascending:false}).limit(1);
-    const avTot = (esistenti?.[0]?.avanzamento||0) + avanzamento_giorno;
-    await sb.from('produzione').insert({data,contatto_id,prodotto,operatore,ore_lavorate,avanzamento:avTot,note:document.getElementById('p-note').value});
-    notify('Lavoro registrato');
-    resetP(); await renderP();
+    if(id) {
+        await sb.from('produzione').update(payload).eq('id', id);
+        notify('Lavorazione aggiornata');
+    } else {
+        await sb.from('produzione').insert(payload);
+        notify('Lavorazione salvata');
+    }
+    resetP(); await renderP(); loading(false);
+};
+
+window.editP=async(id)=>{
+    loading(true);
+    const {data:r} = await sb.from('produzione').select('*').eq('id',id).single();
+    if(r){
+        await fillCommesse('p-commessa');
+        document.getElementById('p-eid').value = r.id;
+        document.getElementById('p-data').value = r.data;
+        document.getElementById('p-commessa').value = r.contatto_id;
+        document.getElementById('p-prodotto').value = r.prodotto;
+        document.getElementById('p-operatore').value = r.operatore;
+        document.getElementById('p-ore').value = r.ore_lavorate;
+        document.getElementById('p-av').value = r.avanzamento;
+        document.getElementById('p-note').value = r.note || '';
+        document.getElementById('p-banner').classList.add('show');
+        document.getElementById('p-sbtn').textContent = 'AGGIORNA LAVORO';
+        switchTab('produzione', document.getElementById('btn-tab-produzione'));
+    }
     loading(false);
 };
 
-window.resetP=()=>{ document.getElementById('p-prodotto').value=''; document.getElementById('p-ore').value=''; document.getElementById('p-av').value=''; };
+window.resetP=()=>{
+    document.getElementById('p-eid').value='';
+    document.getElementById('p-prodotto').value='';
+    document.getElementById('p-ore').value='';
+    document.getElementById('p-av').value='';
+    document.getElementById('p-note').value='';
+    document.getElementById('p-banner').classList.remove('show');
+    document.getElementById('p-sbtn').textContent = 'SALVA LAVORAZIONE';
+};
 
 async function renderP(){
     const {data}=await sb.from('produzione').select('*,contatti(cliente)').order('data',{ascending:false});
     document.getElementById('tot-ore').textContent = (data||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0).toFixed(1);
-    document.getElementById('tbody-p').innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td>${r.operatore}</td><td>${r.ore_lavorate}h</td><td>+${r.avanzamento}%</td><td>${r.avanzamento}%</td><td><button class="btn-del" onclick="delP(${r.id})">✕</button></td></tr>`).join('');
+    document.getElementById('tbody-p').innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td>${r.operatore}</td><td>${r.ore_lavorate}h</td><td>${r.avanzamento}%</td><td><button class="btn-mod" onclick="editP(${r.id})">Modifica</button><button class="btn-del" onclick="delP(${r.id})">✕</button></td></tr>`).join('');
 }
 
-window.delP=async(id)=>{ loading(true); await sb.from('produzione').delete().eq('id',id); await renderP(); loading(false); };
+window.delP=async(id)=>{ if(confirm('Eliminare riga produzione?')){ loading(true); await sb.from('produzione').delete().eq('id',id); await renderP(); loading(false); } };
 
-// LOGICA INCASSI
+// --- LOGICA INCASSI ---
 window.saveI=async()=>{
-    const contatto_id=parseInt(document.getElementById('i-commessa').value);
-    const incasso=parseFloat(document.getElementById('i-incasso').value)||0;
-    if(!contatto_id){ alert('Seleziona cliente'); return; }
+    const id = document.getElementById('i-eid').value;
+    const payload = {
+        data: document.getElementById('i-data').value,
+        contatto_id: parseInt(document.getElementById('i-commessa').value),
+        incasso: parseFloat(document.getElementById('i-incasso').value)||0,
+        finito: document.getElementById('i-finito').value==='true',
+        data_consegna: document.getElementById('i-consegna').value
+    };
     loading(true);
-    await sb.from('uscite').insert({data:document.getElementById('i-data').value,contatto_id,incasso,finito:document.getElementById('i-finito').value==='true',data_consegna:document.getElementById('i-consegna').value});
-    notify('Incasso registrato');
-    await renderI(); loading(false);
+    if(id){
+        await sb.from('uscite').update(payload).eq('id', id);
+        notify('Incasso aggiornato');
+    } else {
+        await sb.from('uscite').insert(payload);
+        notify('Incasso salvato');
+    }
+    resetI(); await renderI(); loading(false);
+};
+
+window.editI=async(id)=>{
+    loading(true);
+    const {data:r} = await sb.from('uscite').select('*').eq('id',id).single();
+    if(r){
+        await fillCommesse('i-commessa');
+        document.getElementById('i-eid').value = r.id;
+        document.getElementById('i-data').value = r.data;
+        document.getElementById('i-commessa').value = r.contatto_id;
+        document.getElementById('i-incasso').value = r.incasso;
+        document.getElementById('i-finito').value = r.finito.toString();
+        document.getElementById('i-consegna').value = r.data_consegna || '';
+        document.getElementById('i-banner').classList.add('show');
+        document.getElementById('i-sbtn').textContent = 'AGGIORNA INCASSO';
+        switchTab('incassi', document.getElementById('btn-tab-incassi'));
+    }
+    loading(false);
+};
+
+window.resetI=()=>{
+    document.getElementById('i-eid').value='';
+    document.getElementById('i-incasso').value='';
+    document.getElementById('i-consegna').value='';
+    document.getElementById('i-banner').classList.remove('show');
+    document.getElementById('i-sbtn').textContent = 'REGISTRA INCASSO';
 };
 
 async function renderI(){
     const {data}=await sb.from('uscite').select('*,contatti(cliente)').order('data',{ascending:false});
-    document.getElementById('tbody-i').innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.finito?'Sì':'No'}</td><td>${r.data_consegna||'-'}</td><td>€ ${fmt(r.incasso)}</td><td><button class="btn-del" onclick="delI(${r.id})">✕</button></td></tr>`).join('');
+    document.getElementById('tbody-i').innerHTML = (data||[]).map(r=>`<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>${r.finito?'CONSEGNATO':'No'}</td><td>€ ${fmt(r.incasso)}</td><td><button class="btn-mod" onclick="editI(${r.id})">Modifica</button><button class="btn-del" onclick="delI(${r.id})">✕</button></td></tr>`).join('');
 }
 
-// FUNZIONI DI STAMPA
-window.printSintetico=async(id)=>{
-    const {data:c}=await sb.from('contatti').select('*').eq('id',id).single();
-    const {data:p}=await sb.from('produzione').select('*').eq('contatto_id',id);
-    const ore = (p||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0);
-    const w=window.open('','','width=600,height=400');
-    w.document.write(`<html><body><h2>SCHEDA SINTETICA: ${c.cliente}</h2><p>Lavoro: ${c.tipo_lavoro}</p><p>Ore Totali: ${ore}h</p><p>Stato: ${c.stato}</p><button onclick="window.print()">Stampa</button></body></html>`);
-    w.document.close();
-};
+window.delI=async(id)=>{ if(confirm('Eliminare incasso?')){ loading(true); await sb.from('uscite').delete().eq('id',id); await renderI(); loading(false); } };
 
-window.printCompleto=async(id)=>{
-    const {data:c}=await sb.from('contatti').select('*').eq('id',id).single();
-    const {data:p}=await sb.from('produzione').select('*').eq('contatto_id',id).order('data');
-    let h = `<html><head><style>table{width:100%;border-collapse:collapse;} th,td{border:1px solid #000;padding:5px;}</style></head><body>`;
-    h += `<h2>REPORT COMPLETO: ${c.cliente}</h2><p>Lavorazione: ${c.tipo_lavoro}</p><table><thead><tr><th>Data</th><th>Operazione</th><th>Operatore</th><th>Ore</th></tr></thead><tbody>`;
-    p.forEach(r => h+=`<tr><td>${r.data}</td><td>${r.prodotto}</td><td>${r.operatore}</td><td>${r.ore_lavorate}</td></tr>`);
-    h += `</tbody></table><br><button onclick="window.print()">Stampa PDF</button></body></html>`;
-    const w=window.open('','','width=800,height=600');
-    w.document.write(h); w.document.close();
-};
-
-window.printGenerale=async()=>{
-    const {data:c}=await sb.from('contatti').select('*');
-    let h = `<html><body><h2>RAPPORTO GENERALE FALEGNAMERIA</h2><table border="1" style="width:100%;border-collapse:collapse"><tr><th>Cliente</th><th>Lavoro</th><th>Valore</th><th>Stato</th></tr>`;
-    c.forEach(r => h+=`<tr><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>€ ${fmt(r.valore)}</td><td>${r.stato}</td></tr>`);
-    h += `</table><br><button onclick="window.print()">Stampa</button></body></html>`;
-    const w=window.open('','','width=800,height=600');
-    w.document.write(h); w.document.close();
-};
-
+// --- STORICO E STAMPE ---
 async function renderStorico(){
+    loading(true);
     const {data:contatti}=await sb.from('contatti').select('*').order('cliente');
     const {data:prod}=await sb.from('produzione').select('*');
     const {data:usc}=await sb.from('uscite').select('*');
     const grid=document.getElementById('storico-grid');
-    if(!contatti?.length){ document.getElementById('storico-empty').style.display='block'; return; }
-    grid.innerHTML = contatti.map(c=>{
-        const cP = prod?.filter(x=>x.contatto_id===c.id) || [];
-        const cU = usc?.filter(x=>x.contatto_id===c.id) || [];
-        const ore = cP.reduce((s,r)=>s+Number(r.ore_lavorate),0);
-        const inc = cU.reduce((s,r)=>s+Number(r.incasso),0);
-        const av = cP.length ? Math.max(...cP.map(x=>x.avanzamento)) : 0;
+    grid.innerHTML = (contatti||[]).map(c=>{
+        const ore = prod?.filter(x=>x.contatto_id===c.id).reduce((s,r)=>s+Number(r.ore_lavorate),0) || 0;
+        const inc = usc?.filter(x=>x.contatto_id===c.id).reduce((s,r)=>s+Number(r.incasso),0) || 0;
+        const av = prod?.filter(x=>x.contatto_id===c.id).reduce((s,r)=>s+r.avanzamento,0) || 0;
         return `<div class="s-card">
             <div class="s-card-head"><div class="s-card-name">${c.cliente}</div><span class="pill ${pillCls(c.stato)}">${c.stato}</span></div>
             <div class="s-card-tipo">${c.tipo_lavoro}</div>
-            <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${av}%"></div></div><div class="prog-val">${av}%</div></div>
+            <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${Math.min(av,100)}%"></div></div><div class="prog-val">${av}%</div></div>
             <div class="s-stats">
                 <div class="s-stat"><div class="s-stat-lbl">Ore Totali</div><div class="s-stat-val">${ore}h</div></div>
                 <div class="s-stat"><div class="s-stat-lbl">Incassato</div><div class="s-stat-val">€ ${fmt(inc)}</div></div>
             </div>
             <div class="s-card-actions">
-                <button class="btn-pdf" onclick="printSintetico(${c.id})">Sintetica</button>
-                <button class="btn-pdf" onclick="printCompleto(${c.id})">Completa</button>
+                <button class="btn-mod" onclick="editC(${c.id})">MODIFICA SCHEDA</button>
+                <button class="btn-pdf" onclick="window.print()">STAMPA PDF</button>
             </div>
         </div>`;
     }).join('');
+    loading(false);
 }
 
 init();
