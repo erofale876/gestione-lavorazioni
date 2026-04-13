@@ -14,11 +14,11 @@
   --text: #d4c4a8; --text2: #a08060; --text3: #604030;
   --mono: 'Share Tech Mono', monospace;
 }
-body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 14px; min-height: 100vh; overflow-x: hidden; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 14px; min-height: 100vh; }
 .header { text-align: center; padding: 20px 16px 16px; border-bottom: 2px solid var(--orange); background: linear-gradient(180deg,#0d0902 0%,var(--bg) 100%); }
 .header-title { font-size: 24px; font-weight: 700; color: var(--orange); letter-spacing: .12em; text-transform: uppercase; }
 .header-sub { font-size: 12px; color: var(--text2); letter-spacing: .06em; margin-top: 6px; }
-.tabs { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; border-bottom: 2px solid var(--border2); background: var(--bg2); position: sticky; top: 0; z-index: 100; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; border-bottom: 2px solid var(--border2); background: var(--bg2); }
 .tab-btn { padding: 14px 8px; cursor: pointer; font-family: var(--mono); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text2); background: none; border: none; border-bottom: 3px solid transparent; }
 .tab-btn:hover { color: var(--text); }
 .tab-btn.active { color: var(--orange); border-bottom: 3px solid var(--orange); background: rgba(232,105,42,.04); }
@@ -56,23 +56,26 @@ main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
 .btn-pdf { background: #1a2a40; color: #70b0e8; border: 1px solid #2a4060; font-size: 10px; padding: 6px 10px; border-radius: 3px; cursor: pointer; font-family: var(--mono); }
 .btn-pdf:hover { background: #2a3a50; }
 
-/* CORREZIONE SCORRIMENTO: Altezza massima e scroll per le tabelle */
+/* MODIFICA: AGGIUNTO SCROLL VERTICALE PER LE TABELLE */
 .table-wrap { 
   border: 1px solid var(--border2); 
   border-radius: 3px; 
   overflow-x: auto; 
-  max-height: 500px; /* Limita l'altezza per non occupare troppo spazio */
+  max-height: 500px; 
   overflow-y: auto; 
-  background: var(--bg2);
+}
+table { width: 100%; border-collapse: collapse; min-width: 560px; }
+thead tr { 
+  background: #120d04; 
+  border-bottom: 1px solid var(--border2); 
+  position: sticky; 
+  top: 0; 
+  z-index: 5; 
 }
 
-table { width: 100%; border-collapse: collapse; min-width: 700px; }
-thead { position: sticky; top: 0; z-index: 10; background: #120d04; }
-thead tr { border-bottom: 2px solid var(--orange); }
-th { padding: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--orange); text-align: left; }
-td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 12px; }
-tr:hover td { background: rgba(232,105,42,0.02); }
-
+th { padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--orange); text-align: left; white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 12px; }
+tr:last-child td { border-bottom: none; }
 .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 2px; text-transform: uppercase; }
 .s-contatto   { background: rgba(60,120,200,.15);  color: #6ab0f0; }
 .s-preventivo { background: rgba(200,160,40,.15);  color: #e0c060; }
@@ -81,9 +84,19 @@ tr:hover td { background: rgba(232,105,42,0.02); }
 .s-fatturato  { background: rgba(120,80,160,.15);  color: #a080d0; }
 .prog-wrap { display: flex; align-items: center; gap: 8px; }
 .prog-bar  { flex: 1; height: 6px; background: var(--border2); border-radius: 3px; min-width: 60px; }
-.prog-fill { height: 100%; border-radius: 3px; background: var(--orange); transition: width 0.3s; }
+.prog-fill { height: 100%; border-radius: 3px; background: var(--orange); }
 .prog-val  { font-size: 11px; color: var(--text2); min-width: 36px; text-align: right; }
-.total-bar { background: #120d04; border-top: 1px solid var(--border2); padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--orange); position: sticky; bottom: 0; }
+.total-bar { 
+  background: #120d04; 
+  border-top: 1px solid var(--border2); 
+  padding: 12px 16px; 
+  font-size: 13px; 
+  font-weight: 700; 
+  color: var(--orange); 
+  position: sticky; 
+  bottom: 0; 
+  z-index: 5;
+}
 .storico-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px,1fr)); gap: 14px; }
 .s-card { background: var(--card); border: 1px solid var(--border2); border-radius: 4px; padding: 16px; transition: border-color .2s; }
 .s-card:hover { border-color: rgba(232,105,42,.5); }
@@ -95,6 +108,8 @@ tr:hover td { background: rgba(232,105,42,0.02); }
 .s-stat-lbl { font-size: 10px; text-transform: uppercase; color: var(--text3); margin-bottom: 3px; }
 .s-stat-val { font-size: 13px; font-weight: 700; color: var(--text); }
 .s-card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.storico-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.td-act { display: flex; gap: 5px; white-space: nowrap; }
 .loading { position: fixed; inset: 0; background: rgba(10,8,4,.88); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 16px; }
 .loading.hidden { display: none; }
 .spinner { width: 36px; height: 36px; border: 3px solid var(--border2); border-top-color: var(--orange); border-radius: 50%; animation: spin .8s linear infinite; }
@@ -313,8 +328,9 @@ tr:hover td { background: rgba(232,105,42,0.02); }
 </div>
 
 <div id="panel-storico" class="panel">
-  <div class="storico-top" style="margin-bottom: 20px;">
-    <button class="btn btn-save" onclick="printGenerale()">⎙ STAMPA RAPPORTO GENERALE</button>
+  <div class="storico-top">
+    <div class="section-title" style="margin-bottom:0">■ RIEPILOGO GENERALE COMMESSE</div>
+    <button class="btn btn-save" onclick="printGenerale()" style="padding:8px 18px;">⎙ STAMPA RAPPORTO GENERALE</button>
   </div>
   <div id="storico-grid" class="storico-grid"></div>
   <div id="storico-empty" style="display:none;text-align:center;padding:60px;color:var(--text3)">Nessun dato in archivio</div>
@@ -340,16 +356,12 @@ function loading(on){ document.getElementById('loading').classList.toggle('hidde
 // ── INIT ────────────────────────────────────────────────
 async function init(){
   ['c-data','p-data','i-data'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=today(); });
-  const pComm = document.getElementById('p-commessa');
-  if(pComm) pComm.addEventListener('change', ricalcolaPreview);
-  const pOre = document.getElementById('p-ore');
-  if(pOre) pOre.addEventListener('input', ricalcolaPreview);
-  
+  document.getElementById('p-commessa').addEventListener('change', ricalcolaPreview);
+  document.getElementById('p-ore').addEventListener('input', ricalcolaPreview);
   await renderC();
   loading(false);
 }
 
-// Preview live ore cumulate e % nel form Produzione
 async function ricalcolaPreview(){
   const cid      = parseInt(document.getElementById('p-commessa').value);
   const oreOggi  = parseFloat(document.getElementById('p-ore').value)||0;
@@ -367,7 +379,7 @@ async function ricalcolaPreview(){
   const orePrec = (prec||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0);
   const oreTot  = orePrec + oreOggi;
   document.getElementById('p-ore-tot').value = oreTot.toFixed(1) + 'h';
-  document.getElementById('p-av-calc').value = oreP > 0 ? calcAv(oreTot,oreP)+'%' : '—';
+  document.getElementById('p-av-calc').value = oreP > 0 ? calcAv(oreTot,oreP)+'%' : '— (ore previste assenti)';
 }
 
 // ── TABS ────────────────────────────────────────────────
@@ -376,7 +388,6 @@ window.switchTab = async(name,el)=>{
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   el.classList.add('active');
-  if(name==='contatti')  { await renderC(); }
   if(name==='produzione'){ await fillCommesse('p-commessa'); await renderP(); }
   if(name==='incassi')   { await fillCommesse('i-commessa'); await renderI(); }
   if(name==='storico')   { await renderStorico(); }
@@ -385,14 +396,11 @@ window.switchTab = async(name,el)=>{
 async function fillCommesse(selId){
   const {data} = await sb.from('contatti').select('id,cliente,tipo_lavoro').order('cliente');
   const sel = document.getElementById(selId);
-  if(!sel) return;
   sel.innerHTML = '<option value="">-- Seleziona Cliente --</option>' +
     (data||[]).map(r=>`<option value="${r.id}">${r.cliente} — ${r.tipo_lavoro}</option>`).join('');
 }
 
-// ════════════════════════════════════════════
-//  CONTATTI
-// ════════════════════════════════════════════
+// ── CONTATTI LOGIC ──────────────────────────────────────
 window.saveC = async()=>{
   const eid         = document.getElementById('c-eid').value;
   const data        = document.getElementById('c-data').value;
@@ -404,30 +412,18 @@ window.saveC = async()=>{
   if(!cliente||!tipo_lavoro){ alert('Inserire Cliente e Tipo Lavoro'); return; }
   loading(true);
   const payload = {data, cliente, tipo_lavoro, ore_previste, valore, stato};
-  
-  try {
-    if(eid){
-      await sb.from('contatti').update(payload).eq('id', parseInt(eid));
-      notify('Contatto aggiornato');
-    } else {
-      await sb.from('contatti').insert(payload);
-      notify('Contatto salvato');
-    }
-    resetC(); 
-    await renderC(); 
-  } catch(err) {
-    console.error(err);
-    alert("Errore durante il salvataggio.");
-  } finally {
-    loading(false);
+  if(eid){
+    await sb.from('contatti').update(payload).eq('id', parseInt(eid));
+    notify('Contatto aggiornato');
+  } else {
+    await sb.from('contatti').insert(payload);
+    notify('Contatto salvato');
   }
+  resetC(); await renderC(); loading(false);
 };
 
 window.resetC = ()=>{
-  ['c-eid','c-cliente','c-valore','c-ore-prev'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.value = '';
-  });
+  ['c-eid','c-cliente','c-valore','c-ore-prev'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('c-data').value  = today();
   document.getElementById('c-tipo').value  = '';
   document.getElementById('c-stato').value = 'Contatto';
@@ -438,7 +434,6 @@ window.resetC = ()=>{
 };
 
 window.editC = async(id)=>{
-  loading(true);
   const {data:r} = await sb.from('contatti').select('*').eq('id',id).single();
   document.getElementById('c-eid').value       = r.id;
   document.getElementById('c-data').value      = r.data;
@@ -452,7 +447,6 @@ window.editC = async(id)=>{
   document.getElementById('c-title').textContent = '■ MODIFICA CONTATTO';
   document.getElementById('c-sbtn').textContent  = 'AGGIORNA CONTATTO';
   document.getElementById('c-card').scrollIntoView({behavior:'smooth'});
-  loading(false);
 };
 
 window.delC = async(id)=>{
@@ -466,9 +460,7 @@ window.delC = async(id)=>{
 
 async function renderC(){
   const {data} = await sb.from('contatti').select('*').order('data',{ascending:false});
-  const tbody = document.getElementById('tbody-c');
-  if(!tbody) return;
-  tbody.innerHTML = (data||[]).map(r=>`
+  document.getElementById('tbody-c').innerHTML = (data||[]).map(r=>`
     <tr>
       <td>${r.data}</td>
       <td><strong style="color:var(--text)">${r.cliente}</strong></td>
@@ -483,9 +475,7 @@ async function renderC(){
     </tr>`).join('');
 }
 
-// ════════════════════════════════════════════
-//  PRODUZIONE
-// ════════════════════════════════════════════
+// ── PRODUZIONE LOGIC ────────────────────────────────────
 window.saveP = async()=>{
   const eid          = document.getElementById('p-eid').value;
   const data         = document.getElementById('p-data').value;
@@ -497,39 +487,29 @@ window.saveP = async()=>{
   if(!contatto_id||!prodotto||!operatore){ alert('Seleziona cliente, lavorazione e operatore'); return; }
   loading(true);
 
-  try {
-    const {data:cont} = await sb.from('contatti').select('ore_previste').eq('id',contatto_id).single();
-    const oreP = Number(cont?.ore_previste||0);
+  const {data:cont} = await sb.from('contatti').select('ore_previste').eq('id',contatto_id).single();
+  const oreP = Number(cont?.ore_previste||0);
 
-    let q = sb.from('produzione').select('ore_lavorate').eq('contatto_id',contatto_id);
-    if(eid) q = q.neq('id', parseInt(eid));
-    const {data:prec} = await q;
-    const orePrec = (prec||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0);
-    const oreTot  = orePrec + ore_lavorate;
-    const avanzamento = calcAv(oreTot, oreP);
+  let q = sb.from('produzione').select('ore_lavorate').eq('contatto_id',contatto_id);
+  if(eid) q = q.neq('id', parseInt(eid));
+  const {data:prec} = await q;
+  const orePrec = (prec||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0);
+  const oreTot  = orePrec + ore_lavorate;
+  const avanzamento = calcAv(oreTot, oreP);
 
-    const payload = {data, contatto_id, prodotto, operatore, ore_lavorate, avanzamento, note};
-    if(eid){
-      await sb.from('produzione').update(payload).eq('id', parseInt(eid));
-      notify('Lavorazione aggiornata');
-    } else {
-      await sb.from('produzione').insert(payload);
-      notify('Lavorazione salvata');
-    }
-    resetP(); await renderP();
-  } catch(err) {
-      console.error(err);
-      alert("Errore salvataggio produzione.");
-  } finally {
-      loading(false);
+  const payload = {data, contatto_id, prodotto, operatore, ore_lavorate, avanzamento, note};
+  if(eid){
+    await sb.from('produzione').update(payload).eq('id', parseInt(eid));
+    notify('Lavorazione aggiornata');
+  } else {
+    await sb.from('produzione').insert(payload);
+    notify('Lavorazione salvata');
   }
+  resetP(); await renderP(); loading(false);
 };
 
 window.resetP = ()=>{
-  ['p-eid','p-ore','p-note'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.value = '';
-  });
+  ['p-eid','p-ore','p-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('p-data').value      = today();
   document.getElementById('p-commessa').value  = '';
   document.getElementById('p-prodotto').value  = '';
@@ -543,7 +523,6 @@ window.resetP = ()=>{
 };
 
 window.editP = async(id)=>{
-  loading(true);
   const {data:r} = await sb.from('produzione').select('*').eq('id',id).single();
   document.getElementById('p-eid').value         = r.id;
   document.getElementById('p-data').value        = r.data;
@@ -558,7 +537,6 @@ window.editP = async(id)=>{
   document.getElementById('p-sbtn').textContent  = 'AGGIORNA LAVORAZIONE';
   await ricalcolaPreview();
   document.getElementById('p-card').scrollIntoView({behavior:'smooth'});
-  loading(false);
 };
 
 window.delP = async(id)=>{
@@ -569,10 +547,7 @@ window.delP = async(id)=>{
 };
 
 async function renderP(){
-  const {data} = await sb.from('produzione')
-    .select('*,contatti(cliente,ore_previste)')
-    .order('data',{ascending:false});
-
+  const {data} = await sb.from('produzione').select('*,contatti(cliente,ore_previste)').order('data',{ascending:false});
   const totOre = (data||[]).reduce((s,r)=>s+Number(r.ore_lavorate),0);
   document.getElementById('tot-ore').textContent = totOre.toFixed(1);
 
@@ -585,9 +560,7 @@ async function renderP(){
     r._av = calcAv(r._oreCum, Number(r.contatti?.ore_previste||0));
   });
 
-  const tbody = document.getElementById('tbody-p');
-  if(!tbody) return;
-  tbody.innerHTML = (data||[]).map(r=>`
+  document.getElementById('tbody-p').innerHTML = (data||[]).map(r=>`
     <tr>
       <td>${r.data}</td>
       <td><strong style="color:var(--text)">${r.contatti?.cliente||'—'}</strong></td>
@@ -609,9 +582,7 @@ async function renderP(){
     </tr>`).join('');
 }
 
-// ════════════════════════════════════════════
-//  INCASSI
-// ════════════════════════════════════════════
+// ── INCASSI LOGIC ───────────────────────────────────────
 window.saveI = async()=>{
   const eid         = document.getElementById('i-eid').value;
   const contatto_id = parseInt(document.getElementById('i-commessa').value);
@@ -621,29 +592,18 @@ window.saveI = async()=>{
   if(!contatto_id){ alert('Seleziona cliente'); return; }
   loading(true);
   const payload = {data:document.getElementById('i-data').value, contatto_id, incasso, finito, data_consegna};
-  
-  try {
-    if(eid){
-      await sb.from('uscite').update(payload).eq('id', parseInt(eid));
-      notify('Incasso aggiornato');
-    } else {
-      await sb.from('uscite').insert(payload);
-      notify('Incasso registrato');
-    }
-    resetI(); await renderI();
-  } catch(err) {
-      console.error(err);
-      alert("Errore salvataggio incasso.");
-  } finally {
-      loading(false);
+  if(eid){
+    await sb.from('uscite').update(payload).eq('id', parseInt(eid));
+    notify('Incasso aggiornato');
+  } else {
+    await sb.from('uscite').insert(payload);
+    notify('Incasso registrato');
   }
+  resetI(); await renderI(); loading(false);
 };
 
 window.resetI = ()=>{
-  ['i-eid','i-incasso','i-consegna'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.value = '';
-  });
+  ['i-eid','i-incasso','i-consegna'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('i-data').value     = today();
   document.getElementById('i-commessa').value = '';
   document.getElementById('i-finito').value   = 'false';
@@ -654,7 +614,6 @@ window.resetI = ()=>{
 };
 
 window.editI = async(id)=>{
-  loading(true);
   const {data:r} = await sb.from('uscite').select('*').eq('id',id).single();
   document.getElementById('i-eid').value      = r.id;
   document.getElementById('i-data').value     = r.data;
@@ -667,7 +626,6 @@ window.editI = async(id)=>{
   document.getElementById('i-title').textContent = '■ MODIFICA INCASSO';
   document.getElementById('i-sbtn').textContent  = 'AGGIORNA INCASSO';
   document.getElementById('i-card').scrollIntoView({behavior:'smooth'});
-  loading(false);
 };
 
 window.delI = async(id)=>{
@@ -681,9 +639,7 @@ async function renderI(){
   const {data} = await sb.from('uscite').select('*,contatti(cliente)').order('data',{ascending:false});
   const totInc = (data||[]).reduce((s,r)=>s+Number(r.incasso),0);
   document.getElementById('tot-inc').textContent = fmt(totInc);
-  const tbody = document.getElementById('tbody-i');
-  if(!tbody) return;
-  tbody.innerHTML = (data||[]).map(r=>`
+  document.getElementById('tbody-i').innerHTML = (data||[]).map(r=>`
     <tr>
       <td>${r.data}</td>
       <td><strong style="color:var(--text)">${r.contatti?.cliente||'—'}</strong></td>
@@ -697,55 +653,48 @@ async function renderI(){
     </tr>`).join('');
 }
 
-// ════════════════════════════════════════════
-//  STORICO
-// ════════════════════════════════════════════
+// ── STORICO LOGIC ───────────────────────────────────────
 async function renderStorico(){
   loading(true);
-  try {
-    const {data:contatti} = await sb.from('contatti').select('*').order('cliente');
-    const {data:prod}     = await sb.from('produzione').select('*');
-    const {data:usc}      = await sb.from('uscite').select('*');
-    const grid  = document.getElementById('storico-grid');
-    const empty = document.getElementById('storico-empty');
-    if(!contatti?.length){ empty.style.display='block'; grid.innerHTML=''; return; }
-    empty.style.display='none';
-    grid.innerHTML = contatti.map(c=>{
-      const cP   = (prod||[]).filter(x=>x.contatto_id===c.id);
-      const cU   = (usc||[]).filter(x=>x.contatto_id===c.id);
-      const ore  = cP.reduce((s,r)=>s+Number(r.ore_lavorate),0);
-      const inc  = cU.reduce((s,r)=>s+Number(r.incasso),0);
-      const oreP = Number(c.ore_previste||0);
-      const av   = calcAv(ore, oreP);
-      return `<div class="s-card">
-        <div class="s-card-head">
-          <div class="s-card-name">${c.cliente}</div>
-          <span class="pill ${pillCls(c.stato)}">${c.stato}</span>
-        </div>
-        <div class="s-card-tipo">${c.tipo_lavoro} · ${c.data}</div>
-        <div class="prog-wrap" style="margin:8px 0">
-          <div class="prog-bar"><div class="prog-fill" style="width:${av}%"></div></div>
-          <div class="prog-val">${av}%</div>
-        </div>
-        <div class="s-stats">
-          <div class="s-stat"><div class="s-stat-lbl">Ore lavorate</div><div class="s-stat-val">${ore.toFixed(1)}h</div></div>
-          <div class="s-stat"><div class="s-stat-lbl">Ore previste</div><div class="s-stat-val">${oreP>0?oreP+'h':'—'}</div></div>
-          <div class="s-stat"><div class="s-stat-lbl">Preventivo</div><div class="s-stat-val">€ ${fmt(c.valore)}</div></div>
-          <div class="s-stat"><div class="s-stat-lbl">Tot. Incassato</div><div class="s-stat-val">€ ${fmt(inc)}</div></div>
-        </div>
-        <div class="s-card-actions">
-          <button class="btn-mod" onclick="editCFromStorico(${c.id})">✎ Modifica</button>
-          <button class="btn-pdf" onclick="printSintetico(${c.id})">⎙ Sintetica</button>
-          <button class="btn-pdf" onclick="printCompleto(${c.id})">⎙ Completa</button>
-          <button class="btn-del" onclick="delC(${c.id})">✕</button>
-        </div>
-      </div>`;
-    }).join('');
-  } catch(err) {
-      console.error(err);
-  } finally {
-      loading(false);
-  }
+  const {data:contatti} = await sb.from('contatti').select('*').order('cliente');
+  const {data:prod}     = await sb.from('produzione').select('*');
+  const {data:usc}      = await sb.from('uscite').select('*');
+  const grid  = document.getElementById('storico-grid');
+  const empty = document.getElementById('storico-empty');
+  if(!contatti?.length){ empty.style.display='block'; grid.innerHTML=''; loading(false); return; }
+  empty.style.display='none';
+  grid.innerHTML = contatti.map(c=>{
+    const cP   = (prod||[]).filter(x=>x.contatto_id===c.id);
+    const cU   = (usc||[]).filter(x=>x.contatto_id===c.id);
+    const ore  = cP.reduce((s,r)=>s+Number(r.ore_lavorate),0);
+    const inc  = cU.reduce((s,r)=>s+Number(r.incasso),0);
+    const oreP = Number(c.ore_previste||0);
+    const av   = calcAv(ore, oreP);
+    return `<div class="s-card">
+      <div class="s-card-head">
+        <div class="s-card-name">${c.cliente}</div>
+        <span class="pill ${pillCls(c.stato)}">${c.stato}</span>
+      </div>
+      <div class="s-card-tipo">${c.tipo_lavoro} · ${c.data}</div>
+      <div class="prog-wrap" style="margin:8px 0">
+        <div class="prog-bar"><div class="prog-fill" style="width:${av}%"></div></div>
+        <div class="prog-val">${av}%</div>
+      </div>
+      <div class="s-stats">
+        <div class="s-stat"><div class="s-stat-lbl">Ore lavorate</div><div class="s-stat-val">${ore.toFixed(1)}h</div></div>
+        <div class="s-stat"><div class="s-stat-lbl">Ore previste</div><div class="s-stat-val">${oreP>0?oreP+'h':'—'}</div></div>
+        <div class="s-stat"><div class="s-stat-lbl">Preventivo</div><div class="s-stat-val">€ ${fmt(c.valore)}</div></div>
+        <div class="s-stat"><div class="s-stat-lbl">Tot. Incassato</div><div class="s-stat-val">€ ${fmt(inc)}</div></div>
+      </div>
+      <div class="s-card-actions">
+        <button class="btn-mod" onclick="editCFromStorico(${c.id})">✎ Modifica</button>
+        <button class="btn-pdf" onclick="printSintetico(${c.id})">⎙ Sintetica</button>
+        <button class="btn-pdf" onclick="printCompleto(${c.id})">⎙ Completa</button>
+        <button class="btn-del" onclick="delC(${c.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  loading(false);
 }
 
 window.editCFromStorico = async(id)=>{
@@ -753,11 +702,10 @@ window.editCFromStorico = async(id)=>{
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-contatti').classList.add('active');
-  const cTab = document.querySelector('button[onclick*="contatti"]');
-  if(cTab) cTab.classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
 };
 
-// ── STAMPE PDF ───────────────────────────────
+// ── STAMPE LOGIC ────────────────────────────────────────
 const CSS_STAMPA = `
 body{font-family:monospace;padding:30px;color:#111;font-size:13px}
 h1{font-size:18px;margin-bottom:4px} h2{font-size:13px;margin:22px 0 6px;border-bottom:1px solid #ccc;padding-bottom:3px}
