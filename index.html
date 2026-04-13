@@ -285,7 +285,6 @@ main {
     background: #2a3a50;
 }
 
-/* CORREZIONE: SCROLL VERTICALE E ALTEZZA MASSIMA */
 .table-wrap {
     border: 1px solid var(--border2);
     border-radius: 3px;
@@ -659,18 +658,16 @@ td {
             
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Lavorazione eseguita</label>
+                    <label class="form-label">Operazione Svolta</label>
                     <select id="p-prodotto" class="form-select">
                         <option value="">-- Seleziona --</option>
-                        <option>Tavoli</option>
-                        <option>Sedie</option>
-                        <option>Armadi</option>
-                        <option>Porte</option>
-                        <option>Cassettoni</option>
-                        <option>Scaffali</option>
-                        <option>Librerie</option>
-                        <option>Mobili su misura</option>
-                        <option>Restauro</option>
+                        <option>Taglio e Sezionatura</option>
+                        <option>Bordatura</option>
+                        <option>Levigatura</option>
+                        <option>Verniciatura</option>
+                        <option>Assemblaggio</option>
+                        <option>Ferramenta</option>
+                        <option>Montaggio Esterno</option>
                         <option>Altro</option>
                     </select>
                 </div>
@@ -723,7 +720,7 @@ td {
                     <tr>
                         <th>Data</th>
                         <th>Cliente</th>
-                        <th>Lavorazione</th>
+                        <th>Operazione</th>
                         <th>Operatore</th>
                         <th>Ore Giorno</th>
                         <th>Ore Tot.</th>
@@ -875,18 +872,22 @@ async function ricalcolaPreview() {
         return;
     }
     
-    const {data: cont} = await sb.from('contatti').select('ore_previste').eq('id', cid).single();
-    const oreP = Number(cont?.ore_previste || 0);
-    
-    let q = sb.from('produzione').select('ore_lavorate').eq('contatto_id', cid);
-    if (eid) q = q.neq('id', parseInt(eid));
-    
-    const {data: prec} = await q;
-    const orePrec = (prec || []).reduce((s, r) => s + Number(r.ore_lavorate), 0);
-    const oreTot = orePrec + oreOggi;
-    
-    document.getElementById('p-ore-tot').value = oreTot.toFixed(1) + 'h';
-    document.getElementById('p-av-calc').value = oreP > 0 ? calcAv(oreTot, oreP) + '%' : '— (ore previste assenti)';
+    try {
+        const {data: cont} = await sb.from('contatti').select('ore_previste').eq('id', cid).single();
+        const oreP = Number(cont?.ore_previste || 0);
+        
+        let q = sb.from('produzione').select('ore_lavorate').eq('contatto_id', cid);
+        if (eid) q = q.neq('id', parseInt(eid));
+        
+        const {data: prec} = await q;
+        const orePrec = (prec || []).reduce((s, r) => s + Number(r.ore_lavorate), 0);
+        const oreTot = orePrec + oreOggi;
+        
+        document.getElementById('p-ore-tot').value = oreTot.toFixed(1) + 'h';
+        document.getElementById('p-av-calc').value = oreP > 0 ? calcAv(oreTot, oreP) + '%' : '— (ore previste assenti)';
+    } catch(e) {
+        console.error(e);
+    }
 }
 
 // ── TABS ────────────────────────────────────────────────
@@ -911,10 +912,14 @@ window.switchTab = async (name, el) => {
 };
 
 async function fillCommesse(selId) {
-    const {data} = await sb.from('contatti').select('id, cliente, tipo_lavoro').order('cliente');
-    const sel = document.getElementById(selId);
-    sel.innerHTML = '<option value="">-- Seleziona Cliente --</option>' + 
-        (data || []).map(r => `<option value="${r.id}">${r.cliente} — ${r.tipo_lavoro}</option>`).join('');
+    try {
+        const {data} = await sb.from('contatti').select('id, cliente, tipo_lavoro').order('cliente');
+        const sel = document.getElementById(selId);
+        sel.innerHTML = '<option value="">-- Seleziona Cliente --</option>' + 
+            (data || []).map(r => `<option value="${r.id}">${r.cliente} — ${r.tipo_lavoro}</option>`).join('');
+    } catch(e) {
+        console.error(e);
+    }
 }
 
 // ════════════════════════════════════════════
@@ -937,17 +942,23 @@ window.saveC = async () => {
     loading(true);
     const payload = {data, cliente, tipo_lavoro, ore_previste, valore, stato};
     
-    if (eid) {
-        await sb.from('contatti').update(payload).eq('id', parseInt(eid));
-        notify('Contatto aggiornato');
-    } else {
-        await sb.from('contatti').insert(payload);
-        notify('Contatto salvato');
+    try {
+        if (eid) {
+            await sb.from('contatti').update(payload).eq('id', parseInt(eid));
+            notify('Contatto aggiornato');
+        } else {
+            await sb.from('contatti').insert(payload);
+            notify('Contatto salvato');
+        }
+        
+        resetC();
+        await renderC();
+    } catch (e) {
+        console.error(e);
+        alert('Errore di comunicazione con il database.');
+    } finally {
+        loading(false);
     }
-    
-    resetC();
-    await renderC();
-    loading(false);
 };
 
 window.resetC = () => {
@@ -965,58 +976,72 @@ window.resetC = () => {
 };
 
 window.editC = async (id) => {
-    const {data: r} = await sb.from('contatti').select('*').eq('id', id).single();
-    
-    document.getElementById('c-eid').value = r.id;
-    document.getElementById('c-data').value = r.data;
-    document.getElementById('c-cliente').value = r.cliente;
-    document.getElementById('c-tipo').value = r.tipo_lavoro;
-    document.getElementById('c-ore-prev').value = r.ore_previste || '';
-    document.getElementById('c-valore').value = r.valore;
-    document.getElementById('c-stato').value = r.stato;
-    
-    document.getElementById('c-banner').classList.add('show');
-    document.getElementById('c-card').classList.add('editing');
-    document.getElementById('c-title').textContent = '■ MODIFICA CONTATTO';
-    document.getElementById('c-sbtn').textContent = 'AGGIORNA CONTATTO';
-    document.getElementById('c-card').scrollIntoView({behavior: 'smooth'});
+    try {
+        const {data: r} = await sb.from('contatti').select('*').eq('id', id).single();
+        
+        document.getElementById('c-eid').value = r.id;
+        document.getElementById('c-data').value = r.data;
+        document.getElementById('c-cliente').value = r.cliente;
+        document.getElementById('c-tipo').value = r.tipo_lavoro;
+        document.getElementById('c-ore-prev').value = r.ore_previste || '';
+        document.getElementById('c-valore').value = r.valore;
+        document.getElementById('c-stato').value = r.stato;
+        
+        document.getElementById('c-banner').classList.add('show');
+        document.getElementById('c-card').classList.add('editing');
+        document.getElementById('c-title').textContent = '■ MODIFICA CONTATTO';
+        document.getElementById('c-sbtn').textContent = 'AGGIORNA CONTATTO';
+        document.getElementById('c-card').scrollIntoView({behavior: 'smooth'});
+    } catch(e) {
+        console.error(e);
+    }
 };
 
 window.delC = async (id) => {
     if (!confirm('Eliminare questo contatto?\nVerranno eliminati anche produzione e incassi collegati.')) return;
     
     loading(true);
-    await sb.from('produzione').delete().eq('contatto_id', id);
-    await sb.from('uscite').delete().eq('contatto_id', id);
-    await sb.from('contatti').delete().eq('id', id);
-    
-    await renderC();
-    loading(false);
-    notify('Contatto eliminato');
+    try {
+        await sb.from('produzione').delete().eq('contatto_id', id);
+        await sb.from('uscite').delete().eq('contatto_id', id);
+        await sb.from('contatti').delete().eq('id', id);
+        
+        await renderC();
+        notify('Contatto eliminato');
+    } catch (e) {
+        console.error(e);
+        alert('Errore durante l\'eliminazione.');
+    } finally {
+        loading(false);
+    }
 };
 
 async function renderC() {
-    const {data} = await sb.from('contatti').select('*').order('data', {ascending: false});
-    
-    const htmlString = (data || []).map(r => {
-        return `
-        <tr>
-            <td>${r.data}</td>
-            <td><strong style="color:var(--text)">${r.cliente}</strong></td>
-            <td>${r.tipo_lavoro}</td>
-            <td style="color:var(--orange)">${r.ore_previste > 0 ? r.ore_previste + 'h' : '—'}</td>
-            <td>€ ${fmt(r.valore)}</td>
-            <td><span class="pill ${pillCls(r.stato)}">${r.stato}</span></td>
-            <td>
-                <div class="td-act">
-                    <button class="btn-mod" onclick="editC(${r.id})">✎ Mod</button>
-                    <button class="btn-del" onclick="delC(${r.id})">✕ Elim</button>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-    
-    document.getElementById('tbody-c').innerHTML = htmlString;
+    try {
+        const {data} = await sb.from('contatti').select('*').order('data', {ascending: false});
+        
+        const htmlString = (data || []).map(r => {
+            return `
+            <tr>
+                <td>${r.data}</td>
+                <td><strong style="color:var(--text)">${r.cliente}</strong></td>
+                <td>${r.tipo_lavoro}</td>
+                <td style="color:var(--orange)">${r.ore_previste > 0 ? r.ore_previste + 'h' : '—'}</td>
+                <td>€ ${fmt(r.valore)}</td>
+                <td><span class="pill ${pillCls(r.stato)}">${r.stato}</span></td>
+                <td>
+                    <div class="td-act">
+                        <button class="btn-mod" onclick="editC(${r.id})">✎ Mod</button>
+                        <button class="btn-del" onclick="delC(${r.id})">✕ Elim</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+        
+        document.getElementById('tbody-c').innerHTML = htmlString;
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 // ════════════════════════════════════════════
@@ -1032,36 +1057,41 @@ window.saveP = async () => {
     const note = document.getElementById('p-note').value;
     
     if (!contatto_id || !prodotto || !operatore) {
-        alert('Seleziona cliente, lavorazione e operatore');
+        alert('Seleziona cliente, operazione e operatore');
         return;
     }
     
     loading(true);
+    try {
+        const {data: cont} = await sb.from('contatti').select('ore_previste').eq('id', contatto_id).single();
+        const oreP = Number(cont?.ore_previste || 0);
 
-    const {data: cont} = await sb.from('contatti').select('ore_previste').eq('id', contatto_id).single();
-    const oreP = Number(cont?.ore_previste || 0);
+        let q = sb.from('produzione').select('ore_lavorate').eq('contatto_id', contatto_id);
+        if (eid) q = q.neq('id', parseInt(eid));
+        
+        const {data: prec} = await q;
+        const orePrec = (prec || []).reduce((s, r) => s + Number(r.ore_lavorate), 0);
+        const oreTot = orePrec + ore_lavorate;
+        const avanzamento = calcAv(oreTot, oreP);
 
-    let q = sb.from('produzione').select('ore_lavorate').eq('contatto_id', contatto_id);
-    if (eid) q = q.neq('id', parseInt(eid));
-    
-    const {data: prec} = await q;
-    const orePrec = (prec || []).reduce((s, r) => s + Number(r.ore_lavorate), 0);
-    const oreTot = orePrec + ore_lavorate;
-    const avanzamento = calcAv(oreTot, oreP);
-
-    const payload = {data, contatto_id, prodotto, operatore, ore_lavorate, avanzamento, note};
-    
-    if (eid) {
-        await sb.from('produzione').update(payload).eq('id', parseInt(eid));
-        notify('Lavorazione aggiornata');
-    } else {
-        await sb.from('produzione').insert(payload);
-        notify('Lavorazione salvata');
+        const payload = {data, contatto_id, prodotto, operatore, ore_lavorate, avanzamento, note};
+        
+        if (eid) {
+            await sb.from('produzione').update(payload).eq('id', parseInt(eid));
+            notify('Lavorazione aggiornata');
+        } else {
+            await sb.from('produzione').insert(payload);
+            notify('Lavorazione salvata');
+        }
+        
+        resetP();
+        await renderP();
+    } catch (e) {
+        console.error(e);
+        alert('Errore di comunicazione con il database.');
+    } finally {
+        loading(false);
     }
-    
-    resetP();
-    await renderP();
-    loading(false);
 };
 
 window.resetP = () => {
@@ -1082,80 +1112,94 @@ window.resetP = () => {
 };
 
 window.editP = async (id) => {
-    const {data: r} = await sb.from('produzione').select('*').eq('id', id).single();
-    
-    document.getElementById('p-eid').value = r.id;
-    document.getElementById('p-data').value = r.data;
-    document.getElementById('p-commessa').value = r.contatto_id;
-    document.getElementById('p-prodotto').value = r.prodotto;
-    document.getElementById('p-operatore').value = r.operatore;
-    document.getElementById('p-ore').value = r.ore_lavorate;
-    document.getElementById('p-note').value = r.note || '';
-    
-    document.getElementById('p-banner').classList.add('show');
-    document.getElementById('p-card').classList.add('editing');
-    document.getElementById('p-title').textContent = '■ MODIFICA LAVORAZIONE';
-    document.getElementById('p-sbtn').textContent = 'AGGIORNA LAVORAZIONE';
-    
-    await ricalcolaPreview();
-    document.getElementById('p-card').scrollIntoView({behavior: 'smooth'});
+    try {
+        const {data: r} = await sb.from('produzione').select('*').eq('id', id).single();
+        
+        document.getElementById('p-eid').value = r.id;
+        document.getElementById('p-data').value = r.data;
+        document.getElementById('p-commessa').value = r.contatto_id;
+        document.getElementById('p-prodotto').value = r.prodotto;
+        document.getElementById('p-operatore').value = r.operatore;
+        document.getElementById('p-ore').value = r.ore_lavorate;
+        document.getElementById('p-note').value = r.note || '';
+        
+        document.getElementById('p-banner').classList.add('show');
+        document.getElementById('p-card').classList.add('editing');
+        document.getElementById('p-title').textContent = '■ MODIFICA LAVORAZIONE';
+        document.getElementById('p-sbtn').textContent = 'AGGIORNA LAVORAZIONE';
+        
+        await ricalcolaPreview();
+        document.getElementById('p-card').scrollIntoView({behavior: 'smooth'});
+    } catch (e) {
+        console.error(e);
+    }
 };
 
 window.delP = async (id) => {
     if (!confirm('Eliminare questa lavorazione?')) return;
     loading(true);
-    await sb.from('produzione').delete().eq('id', id);
-    await renderP();
-    loading(false);
-    notify('Lavorazione eliminata');
+    try {
+        await sb.from('produzione').delete().eq('id', id);
+        await renderP();
+        notify('Lavorazione eliminata');
+    } catch (e) {
+        console.error(e);
+        alert('Errore durante l\'eliminazione.');
+    } finally {
+        loading(false);
+    }
 };
 
 async function renderP() {
-    const {data} = await sb.from('produzione')
-        .select('*, contatti(cliente, ore_previste)')
-        .order('data', {ascending: false});
+    try {
+        const {data} = await sb.from('produzione')
+            .select('*, contatti(cliente, ore_previste)')
+            .order('data', {ascending: false});
 
-    const totOre = (data || []).reduce((s, r) => s + Number(r.ore_lavorate), 0);
-    document.getElementById('tot-ore').textContent = totOre.toFixed(1);
+        const totOre = (data || []).reduce((s, r) => s + Number(r.ore_lavorate), 0);
+        document.getElementById('tot-ore').textContent = totOre.toFixed(1);
 
-    const cronol = [...(data || [])].sort((a, b) => a.data.localeCompare(b.data) || a.id - b.id);
-    const cumMap = {};
-    
-    cronol.forEach(r => {
-        if (!cumMap[r.contatto_id]) cumMap[r.contatto_id] = 0;
-        cumMap[r.contatto_id] += Number(r.ore_lavorate);
-        r._oreCum = cumMap[r.contatto_id];
-        r._av = calcAv(r._oreCum, Number(r.contatti?.ore_previste || 0));
-    });
+        const cronol = [...(data || [])].sort((a, b) => a.data.localeCompare(b.data) || a.id - b.id);
+        const cumMap = {};
+        
+        cronol.forEach(r => {
+            if (!cumMap[r.contatto_id]) cumMap[r.contatto_id] = 0;
+            cumMap[r.contatto_id] += Number(r.ore_lavorate);
+            r._oreCum = cumMap[r.contatto_id];
+            r._av = calcAv(r._oreCum, Number(r.contatti?.ore_previste || 0));
+        });
 
-    const htmlString = (data || []).map(r => {
-        return `
-        <tr>
-            <td>${r.data}</td>
-            <td><strong style="color:var(--text)">${r.contatti?.cliente || '—'}</strong></td>
-            <td>${r.prodotto}</td>
-            <td>${r.operatore}</td>
-            <td style="color:var(--orange)">${Number(r.ore_lavorate).toFixed(1)}h</td>
-            <td>${(r._oreCum || 0).toFixed(1)}h</td>
-            <td>
-                <div class="prog-wrap">
-                    <div class="prog-bar">
-                        <div class="prog-fill" style="width:${r._av || 0}%"></div>
+        const htmlString = (data || []).map(r => {
+            return `
+            <tr>
+                <td>${r.data}</td>
+                <td><strong style="color:var(--text)">${r.contatti?.cliente || '—'}</strong></td>
+                <td>${r.prodotto}</td>
+                <td>${r.operatore}</td>
+                <td style="color:var(--orange)">${Number(r.ore_lavorate).toFixed(1)}h</td>
+                <td>${(r._oreCum || 0).toFixed(1)}h</td>
+                <td>
+                    <div class="prog-wrap">
+                        <div class="prog-bar">
+                            <div class="prog-fill" style="width:${r._av || 0}%"></div>
+                        </div>
+                        <div class="prog-val">${r._av || 0}%</div>
                     </div>
-                    <div class="prog-val">${r._av || 0}%</div>
-                </div>
-            </td>
-            <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.note || ''}">${r.note || '—'}</td>
-            <td>
-                <div class="td-act">
-                    <button class="btn-mod" onclick="editP(${r.id})">✎</button>
-                    <button class="btn-del" onclick="delP(${r.id})">✕</button>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-    
-    document.getElementById('tbody-p').innerHTML = htmlString;
+                </td>
+                <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.note || ''}">${r.note || '—'}</td>
+                <td>
+                    <div class="td-act">
+                        <button class="btn-mod" onclick="editP(${r.id})">✎</button>
+                        <button class="btn-del" onclick="delP(${r.id})">✕</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+        
+        document.getElementById('tbody-p').innerHTML = htmlString;
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 // ════════════════════════════════════════════
@@ -1182,17 +1226,23 @@ window.saveI = async () => {
         data_consegna
     };
     
-    if (eid) {
-        await sb.from('uscite').update(payload).eq('id', parseInt(eid));
-        notify('Incasso aggiornato');
-    } else {
-        await sb.from('uscite').insert(payload);
-        notify('Incasso registrato');
+    try {
+        if (eid) {
+            await sb.from('uscite').update(payload).eq('id', parseInt(eid));
+            notify('Incasso aggiornato');
+        } else {
+            await sb.from('uscite').insert(payload);
+            notify('Incasso registrato');
+        }
+        
+        resetI();
+        await renderI();
+    } catch (e) {
+        console.error(e);
+        alert('Errore di comunicazione con il database.');
+    } finally {
+        loading(false);
     }
-    
-    resetI();
-    await renderI();
-    loading(false);
 };
 
 window.resetI = () => {
@@ -1210,55 +1260,69 @@ window.resetI = () => {
 };
 
 window.editI = async (id) => {
-    const {data: r} = await sb.from('uscite').select('*').eq('id', id).single();
-    
-    document.getElementById('i-eid').value = r.id;
-    document.getElementById('i-data').value = r.data;
-    document.getElementById('i-commessa').value = r.contatto_id;
-    document.getElementById('i-finito').value = r.finito ? 'true' : 'false';
-    document.getElementById('i-consegna').value = r.data_consegna || '';
-    document.getElementById('i-incasso').value = r.incasso;
-    
-    document.getElementById('i-banner').classList.add('show');
-    document.getElementById('i-card').classList.add('editing');
-    document.getElementById('i-title').textContent = '■ MODIFICA INCASSO';
-    document.getElementById('i-sbtn').textContent = 'AGGIORNA INCASSO';
-    document.getElementById('i-card').scrollIntoView({behavior: 'smooth'});
+    try {
+        const {data: r} = await sb.from('uscite').select('*').eq('id', id).single();
+        
+        document.getElementById('i-eid').value = r.id;
+        document.getElementById('i-data').value = r.data;
+        document.getElementById('i-commessa').value = r.contatto_id;
+        document.getElementById('i-finito').value = r.finito ? 'true' : 'false';
+        document.getElementById('i-consegna').value = r.data_consegna || '';
+        document.getElementById('i-incasso').value = r.incasso;
+        
+        document.getElementById('i-banner').classList.add('show');
+        document.getElementById('i-card').classList.add('editing');
+        document.getElementById('i-title').textContent = '■ MODIFICA INCASSO';
+        document.getElementById('i-sbtn').textContent = 'AGGIORNA INCASSO';
+        document.getElementById('i-card').scrollIntoView({behavior: 'smooth'});
+    } catch (e) {
+        console.error(e);
+    }
 };
 
 window.delI = async (id) => {
     if (!confirm('Eliminare questo incasso?')) return;
     loading(true);
-    await sb.from('uscite').delete().eq('id', id);
-    await renderI();
-    loading(false);
-    notify('Incasso eliminato');
+    try {
+        await sb.from('uscite').delete().eq('id', id);
+        await renderI();
+        notify('Incasso eliminato');
+    } catch (e) {
+        console.error(e);
+        alert('Errore durante l\'eliminazione.');
+    } finally {
+        loading(false);
+    }
 };
 
 async function renderI() {
-    const {data} = await sb.from('uscite').select('*, contatti(cliente)').order('data', {ascending: false});
-    
-    const totInc = (data || []).reduce((s, r) => s + Number(r.incasso), 0);
-    document.getElementById('tot-inc').textContent = fmt(totInc);
-    
-    const htmlString = (data || []).map(r => {
-        return `
-        <tr>
-            <td>${r.data}</td>
-            <td><strong style="color:var(--text)">${r.contatti?.cliente || '—'}</strong></td>
-            <td>${r.finito ? '<span class="pill s-consegnato">Sì</span>' : '<span class="pill s-preventivo">No</span>'}</td>
-            <td>${r.data_consegna || '—'}</td>
-            <td style="color:var(--orange)">€ ${fmt(r.incasso)}</td>
-            <td>
-                <div class="td-act">
-                    <button class="btn-mod" onclick="editI(${r.id})">✎ Mod</button>
-                    <button class="btn-del" onclick="delI(${r.id})">✕ Elim</button>
-                </div>
-            </td>
-        </tr>`;
-    }).join('');
-    
-    document.getElementById('tbody-i').innerHTML = htmlString;
+    try {
+        const {data} = await sb.from('uscite').select('*, contatti(cliente)').order('data', {ascending: false});
+        
+        const totInc = (data || []).reduce((s, r) => s + Number(r.incasso), 0);
+        document.getElementById('tot-inc').textContent = fmt(totInc);
+        
+        const htmlString = (data || []).map(r => {
+            return `
+            <tr>
+                <td>${r.data}</td>
+                <td><strong style="color:var(--text)">${r.contatti?.cliente || '—'}</strong></td>
+                <td>${r.finito ? '<span class="pill s-consegnato">Sì</span>' : '<span class="pill s-preventivo">No</span>'}</td>
+                <td>${r.data_consegna || '—'}</td>
+                <td style="color:var(--orange)">€ ${fmt(r.incasso)}</td>
+                <td>
+                    <div class="td-act">
+                        <button class="btn-mod" onclick="editI(${r.id})">✎ Mod</button>
+                        <button class="btn-del" onclick="delI(${r.id})">✕ Elim</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+        
+        document.getElementById('tbody-i').innerHTML = htmlString;
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 // ════════════════════════════════════════════
@@ -1266,76 +1330,81 @@ async function renderI() {
 // ════════════════════════════════════════════
 async function renderStorico() {
     loading(true);
-    const {data: contatti} = await sb.from('contatti').select('*').order('cliente');
-    const {data: prod} = await sb.from('produzione').select('*');
-    const {data: usc} = await sb.from('uscite').select('*');
-    
-    const grid = document.getElementById('storico-grid');
-    const empty = document.getElementById('storico-empty');
-    
-    if (!contatti?.length) {
-        empty.style.display = 'block';
-        grid.innerHTML = '';
+    try {
+        const {data: contatti} = await sb.from('contatti').select('*').order('cliente');
+        const {data: prod} = await sb.from('produzione').select('*');
+        const {data: usc} = await sb.from('uscite').select('*');
+        
+        const grid = document.getElementById('storico-grid');
+        const empty = document.getElementById('storico-empty');
+        
+        if (!contatti?.length) {
+            empty.style.display = 'block';
+            grid.innerHTML = '';
+            loading(false);
+            return;
+        }
+        
+        empty.style.display = 'none';
+        
+        const htmlString = contatti.map(c => {
+            const cP = (prod || []).filter(x => x.contatto_id === c.id);
+            const cU = (usc || []).filter(x => x.contatto_id === c.id);
+            
+            const ore = cP.reduce((s, r) => s + Number(r.ore_lavorate), 0);
+            const inc = cU.reduce((s, r) => s + Number(r.incasso), 0);
+            const oreP = Number(c.ore_previste || 0);
+            const av = calcAv(ore, oreP);
+            
+            return `
+            <div class="s-card">
+                <div class="s-card-head">
+                    <div class="s-card-name">${c.cliente}</div>
+                    <span class="pill ${pillCls(c.stato)}">${c.stato}</span>
+                </div>
+                <div class="s-card-tipo">${c.tipo_lavoro} · ${c.data}</div>
+                
+                <div class="prog-wrap" style="margin:8px 0">
+                    <div class="prog-bar">
+                        <div class="prog-fill" style="width:${av}%"></div>
+                    </div>
+                    <div class="prog-val">${av}%</div>
+                </div>
+                
+                <div class="s-stats">
+                    <div class="s-stat">
+                        <div class="s-stat-lbl">Ore lavorate</div>
+                        <div class="s-stat-val">${ore.toFixed(1)}h</div>
+                    </div>
+                    <div class="s-stat">
+                        <div class="s-stat-lbl">Ore previste</div>
+                        <div class="s-stat-val">${oreP > 0 ? oreP + 'h' : '—'}</div>
+                    </div>
+                    <div class="s-stat">
+                        <div class="s-stat-lbl">Preventivo</div>
+                        <div class="s-stat-val">€ ${fmt(c.valore)}</div>
+                    </div>
+                    <div class="s-stat">
+                        <div class="s-stat-lbl">Tot. Incassato</div>
+                        <div class="s-stat-val">€ ${fmt(inc)}</div>
+                    </div>
+                </div>
+                
+                <div class="s-card-actions">
+                    <button class="btn-mod" onclick="editCFromStorico(${c.id})">✎ Modifica</button>
+                    <button class="btn-pdf" onclick="printSintetico(${c.id})">⎙ Sintetica</button>
+                    <button class="btn-pdf" onclick="printCompleto(${c.id})">⎙ Completa</button>
+                    <button class="btn-del" onclick="delC(${c.id})">✕</button>
+                </div>
+            </div>`;
+        }).join('');
+        
+        grid.innerHTML = htmlString;
+    } catch (e) {
+        console.error(e);
+    } finally {
         loading(false);
-        return;
     }
-    
-    empty.style.display = 'none';
-    
-    const htmlString = contatti.map(c => {
-        const cP = (prod || []).filter(x => x.contatto_id === c.id);
-        const cU = (usc || []).filter(x => x.contatto_id === c.id);
-        
-        const ore = cP.reduce((s, r) => s + Number(r.ore_lavorate), 0);
-        const inc = cU.reduce((s, r) => s + Number(r.incasso), 0);
-        const oreP = Number(c.ore_previste || 0);
-        const av = calcAv(ore, oreP);
-        
-        return `
-        <div class="s-card">
-            <div class="s-card-head">
-                <div class="s-card-name">${c.cliente}</div>
-                <span class="pill ${pillCls(c.stato)}">${c.stato}</span>
-            </div>
-            <div class="s-card-tipo">${c.tipo_lavoro} · ${c.data}</div>
-            
-            <div class="prog-wrap" style="margin:8px 0">
-                <div class="prog-bar">
-                    <div class="prog-fill" style="width:${av}%"></div>
-                </div>
-                <div class="prog-val">${av}%</div>
-            </div>
-            
-            <div class="s-stats">
-                <div class="s-stat">
-                    <div class="s-stat-lbl">Ore lavorate</div>
-                    <div class="s-stat-val">${ore.toFixed(1)}h</div>
-                </div>
-                <div class="s-stat">
-                    <div class="s-stat-lbl">Ore previste</div>
-                    <div class="s-stat-val">${oreP > 0 ? oreP + 'h' : '—'}</div>
-                </div>
-                <div class="s-stat">
-                    <div class="s-stat-lbl">Preventivo</div>
-                    <div class="s-stat-val">€ ${fmt(c.valore)}</div>
-                </div>
-                <div class="s-stat">
-                    <div class="s-stat-lbl">Tot. Incassato</div>
-                    <div class="s-stat-val">€ ${fmt(inc)}</div>
-                </div>
-            </div>
-            
-            <div class="s-card-actions">
-                <button class="btn-mod" onclick="editCFromStorico(${c.id})">✎ Modifica</button>
-                <button class="btn-pdf" onclick="printSintetico(${c.id})">⎙ Sintetica</button>
-                <button class="btn-pdf" onclick="printCompleto(${c.id})">⎙ Completa</button>
-                <button class="btn-del" onclick="delC(${c.id})">✕</button>
-            </div>
-        </div>`;
-    }).join('');
-    
-    grid.innerHTML = htmlString;
-    loading(false);
 }
 
 window.editCFromStorico = async (id) => {
@@ -1483,10 +1552,17 @@ window.printCompleto = async (id) => {
 
 window.printGenerale = async () => {
     loading(true);
-    const {data: c} = await sb.from('contatti').select('*').order('cliente');
-    const {data: p} = await sb.from('produzione').select('*');
-    const {data: u} = await sb.from('uscite').select('*');
-    loading(false);
+    let c, p, u;
+    try {
+        const {data: cData} = await sb.from('contatti').select('*').order('cliente');
+        const {data: pData} = await sb.from('produzione').select('*');
+        const {data: uData} = await sb.from('uscite').select('*');
+        c = cData; p = pData; u = uData;
+    } catch(e) {
+        console.error(e);
+    } finally {
+        loading(false);
+    }
     
     const totOre = (p || []).reduce((s, r) => s + Number(r.ore_lavorate), 0);
     const totInc = (u || []).reduce((s, r) => s + Number(r.incasso), 0);
