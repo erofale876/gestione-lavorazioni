@@ -24,6 +24,7 @@ main { margin-top: var(--header-h); padding: 15px; padding-bottom: 80px; }
 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .btn { padding: 12px; font-family: inherit; font-weight: 700; border-radius: 3px; cursor: pointer; text-transform: uppercase; border: none; }
 .btn-save { background: var(--orange); color: white; }
+.btn-cancel { background: #333; color: #999; }
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); }
 table { width: 100%; border-collapse: collapse; min-width: 500px; }
 th { background: #000; color: var(--orange); font-size: 10px; text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
@@ -68,14 +69,7 @@ td { padding: 10px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #b
         <div class="section-card">
             <input type="hidden" id="p-eid">
             <div class="form-group"><label class="form-label">Cliente</label><select id="p-commessa" class="form-select"></select></div>
-            <div class="form-group"><label class="form-label">Operazione Svolta</label>
-                <select id="p-operazione" class="form-select">
-                    <option value="">-- Seleziona --</option>
-                    <option>Taglio e Sezionatura</option><option>Bordatura</option><option>Levigatura</option>
-                    <option>Verniciatura</option><option>Assemblaggio</option><option>Ferramenta</option>
-                    <option>Montaggio Esterno</option><option>Altro</option>
-                </select>
-            </div>
+            <div class="form-group"><label class="form-label">Cosa hai fatto?</label><input type="text" id="p-operazione" class="form-input"></div>
             <div class="form-group"><label class="form-label">Chi?</label><select id="p-operatore" class="form-select"><option>Titolare</option><option>Nazzareno</option><option>Dipendente B</option><option>Altro</option></select></div>
             <div class="form-group"><label class="form-label">Ore</label><input type="number" id="p-ore" class="form-input"></div>
             <div class="form-group"><label class="form-label">% Avanzamento</label><input type="number" id="p-av" class="form-input"></div>
@@ -84,14 +78,7 @@ td { padding: 10px; font-size: 12px; border-bottom: 1px solid #1a1a1a; color: #b
         <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Cosa</th><th>Ore</th><th>Azioni</th></tr></thead><tbody id="tbody-p"></tbody></table></div>
     </section>
 
-    <section id="panel-incassi" class="panel">
-        <div class="section-card">
-            <div class="form-group"><label class="form-label">Cliente</label><select id="i-commessa" class="form-select"></select></div>
-            <div class="form-group"><label class="form-label">Importo Incassato (€)</label><input type="number" id="i-incasso" class="form-input"></div>
-            <div class="btn-row"><button class="btn btn-save" onclick="saveI()">Registra Incasso</button></div>
-        </div>
-        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Importo</th><th>Azioni</th></tr></thead><tbody id="tbody-i"></tbody></table></div>
-    </section>
+    <section id="panel-incassi" class="panel"><div id="incassi-content" class="section-card">Caricamento...</div></section>
 
     <section id="panel-storico" class="panel">
         <div class="search-box"><input type="text" id="search-input" class="search-input" placeholder="Cerca..." oninput="renderStorico()"></div>
@@ -105,14 +92,12 @@ const sb = createClient('https://uyzfhilwtikrjqgylxwg.supabase.co', 'eyJhbGciOiJ
 
 const $ = id => document.getElementById(id);
 const loading = on => $('loading').style.display = on ? 'flex' : 'none';
-const getToday = () => new Date().toISOString().split('T')[0];
 
 window.switchTab = async (n) => {
     document.querySelectorAll('.panel, .tab-btn').forEach(el => el.classList.remove('active'));
     $('panel-'+n).classList.add('active'); $('tab-'+n.charAt(0)).classList.add('active');
     if(n==='contatti') renderC();
     if(n==='produzione') { fillSel('p-commessa'); renderP(); }
-    if(n==='incassi') { fillSel('i-commessa'); renderI(); }
     if(n==='storico') renderStorico();
 };
 
@@ -122,10 +107,8 @@ async function fillSel(id) {
 }
 
 window.saveC = async () => {
-    const obj = { cliente: $('c-cliente').value, tipo_lavoro: $('c-tipo').value, valore: $('c-valore').value, data: getToday() };
-    loading(true); 
-    try { await sb.from('contatti').insert(obj); renderC(); } catch(e) {}
-    loading(false);
+    const obj = { cliente: $('c-cliente').value, tipo_lavoro: $('c-tipo').value, valore: $('c-valore').value, data: new Date().toISOString().split('T')[0] };
+    loading(true); await sb.from('contatti').insert(obj); renderC(); loading(false);
 };
 
 async function renderC() {
@@ -137,35 +120,23 @@ window.delC = async id => { if(confirm('Elimina?')) { await sb.from('contatti').
 window.saveP = async () => {
     const obj = { 
         contatto_id: $('p-commessa').value, 
-        prodotto: $('p-operazione').value, 
+        prodotto: $('p-operazione').value, // Prova con 'prodotto'
+        operazione: $('p-operazione').value, // Prova anche con 'operazione' per sicurezza
         operatore: $('p-operatore').value, 
         ore_lavorate: $('p-ore').value, 
         avanzamento: $('p-av').value,
-        data: getToday() 
+        data: new Date().toISOString().split('T')[0] 
     };
     loading(true); 
-    try { await sb.from('produzione').insert(obj); renderP(); } catch(e) {}
-    loading(false);
+    await sb.from('produzione').insert(obj); 
+    renderP(); loading(false);
 };
 
 async function renderP() {
     const {data} = await sb.from('produzione').select('*, contatti(cliente)').order('id', {ascending:false});
-    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.contatti?.cliente}</td><td>${r.prodotto}</td><td>${r.ore_lavorate}h</td><td><button onclick="delP(${r.id})">✕</button></td></tr>`).join('');
+    $('tbody-p').innerHTML = (data||[]).map(r => `<tr><td>${r.contatti?.cliente}</td><td>${r.prodotto || r.operazione || '---'}</td><td>${r.ore_lavorate}h</td><td><button onclick="delP(${r.id})">✕</button></td></tr>`).join('');
 }
 window.delP = async id => { if(confirm('Elimina?')) { await sb.from('produzione').delete().eq('id', id); renderP(); } };
-
-window.saveI = async () => {
-    const obj = { contatto_id: $('i-commessa').value, incasso: $('i-incasso').value, data: getToday() };
-    loading(true);
-    try { await sb.from('uscite').insert(obj); renderI(); } catch(e) {}
-    loading(false);
-};
-
-async function renderI() {
-    const {data} = await sb.from('uscite').select('*, contatti(cliente)').order('id', {ascending:false});
-    $('tbody-i').innerHTML = (data||[]).map(r => `<tr><td>${r.data}</td><td>${r.contatti?.cliente}</td><td>€ ${r.incasso}</td><td><button onclick="delI(${r.id})">✕</button></td></tr>`).join('');
-}
-window.delI = async id => { if(confirm('Elimina?')) { await sb.from('uscite').delete().eq('id', id); renderI(); } };
 
 async function renderStorico() {
     const {data: c} = await sb.from('contatti').select('*');
@@ -173,7 +144,7 @@ async function renderStorico() {
     const search = $('search-input').value.toLowerCase();
     $('storico-list').innerHTML = c.filter(x => x.cliente.toLowerCase().includes(search)).map(cl => {
         const logs = p.filter(lx => lx.contatto_id === cl.id);
-        return `<div class="s-card"><b>${cl.cliente}</b><div class="timeline">${logs.map(l => `<div>${l.data}: ${l.prodotto} (${l.operatore})</div>`).join('')}</div></div>`;
+        return `<div class="s-card"><b>${cl.cliente}</b><div class="timeline">${logs.map(l => `<div>${l.data}: ${l.prodotto || l.operazione} (${l.operatore})</div>`).join('')}</div></div>`;
     }).join('');
 }
 
