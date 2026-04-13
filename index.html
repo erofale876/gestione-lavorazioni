@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Desantis Gestione - Turbo</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<style>
-/* Stili ottimizzati per velocità e resa mobile */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-:root { --bg: #0d0902; --card: #1a1208; --border: #3a2510; --orange: #e8692a; --text: #d4c4a8; --text2: #a08060; --mono: 'Share Tech Mono', monospace; }
-body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 14px; line-height: 1.4; }
-.header { text-align: center; padding: 15px; border-bottom: 2px solid var(--orange); background: #000; }
-.tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #1a1208; border-bottom: 1px solid var(--border); }
-.tab-btn { padding: 12px 5px; cursor: pointer; background: none; border: none; color: var(--text2); font-family: var(--mono); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid transparent; transition: 0.2s; }
-.tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); background: rgba(232, 105, 42, 0.1); }
-main { max-width: 900px; margin: 0 auto; padding: 15px; }
-.panel { display: none; } .panel.active { display: block; }
-.card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 4px; margin-bottom: 15px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.form-group { display: flex; flex-direction: column; }
-label { font-size: 10px; color: var(--orange); text-transform: uppercase; margin-bottom: 4px; }
-input, select, textarea { background: #000; border: 1px solid var(--border); padding: 10px; color: #fff; font-family: var(--mono); border-radius: 3px; }
-.btn { width: 100%; padding: 12px; background: var(--orange); border: none; color: #fff; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 3px; margin-top: 5px; }
-.btn:active { transform: scale(0.98); }
-.table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th { text-align: left; padding: 10px; background: #000; color: var(--orange); border-bottom: 1px solid var(--orange); }
-td { padding: 10px; border-bottom: 1px solid var(--border); }
-.loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: 0.3s; }
-.spinner { width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-#notif { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--orange); color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 10001; }
-.hidden { display: none !important; opacity: 0; pointer-events: none; }
-@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desantis Gestione - Turbo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* Stili ottimizzati per velocità e resa mobile */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --bg: #0d0902; --card: #1a1208; --border: #3a2510; --orange: #e8692a; --text: #d4c4a8; --text2: #a08060; --mono: 'Share Tech Mono', monospace; }
+        body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 14px; line-height: 1.4; }
+        .header { text-align: center; padding: 15px; border-bottom: 2px solid var(--orange); background: #000; }
+        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #1a1208; border-bottom: 1px solid var(--border); }
+        .tab-btn { padding: 12px 5px; cursor: pointer; background: none; border: none; color: var(--text2); font-family: var(--mono); font-size: 11px; text-transform: uppercase; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); background: rgba(232, 105, 42, 0.1); }
+        main { max-width: 900px; margin: 0 auto; padding: 15px; }
+        .panel { display: none; } .panel.active { display: block; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 4px; margin-bottom: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 10px; color: var(--orange); text-transform: uppercase; margin-bottom: 4px; }
+        input, select, textarea { background: #000; border: 1px solid var(--border); padding: 10px; color: #fff; font-family: var(--mono); border-radius: 3px; }
+        .btn { width: 100%; padding: 12px; background: var(--orange); border: none; color: #fff; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 3px; margin-top: 5px; }
+        .btn:active { transform: scale(0.98); }
+        .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; padding: 10px; background: #000; color: var(--orange); border-bottom: 1px solid var(--orange); }
+        td { padding: 10px; border-bottom: 1px solid var(--border); }
+        .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: 0.3s; }
+        .spinner { width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #notif { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--orange); color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 10001; }
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 
@@ -121,7 +121,7 @@ td { padding: 10px; border-bottom: 1px solid var(--border); }
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPA_URL = 'https://uyzfhilwtikrjqgylxwg.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5emZoaWx3dGlrcmpxZ3lseHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTYwNDcsImV4cCI6MjA5MDg5MjA0N30._tmP4XpZnK9Wmc3AkkZd52hM_xrmMHIK2EjGTB3xYfQ';
+const SUPA_KEY = 'YOUR_API_KEY_HERE';  // Non includere la chiave direttamente
 const sb = createClient(SUPA_URL, SUPA_KEY);
 
 let schemaHasOrePreviste = true; // Memoizzazione automatica
@@ -138,7 +138,6 @@ function toast(m) {
     setTimeout(() => n.style.opacity = 0, 2500);
 }
 
-// SALVATAGGIO OTTIMIZZATO (NIENTE DOPPI TENTATIVI SE NON NECESSARI)
 async function fastSave(table, payload) {
     toggleLoad(true, "INVIO DATI...");
     
@@ -173,13 +172,21 @@ async function fastSave(table, payload) {
 
 window.saveC = async () => {
     const p = {
-        cliente: document.getElementById('c-cliente').value,
+        cliente: document.getElementById('c-cliente').value.trim(),
         tipo_lavoro: document.getElementById('c-tipo').value,
         valore: parseFloat(document.getElementById('c-valore').value) || 0,
         ore_previste: parseFloat(document.getElementById('c-ore').value) || 0,
         data: new Date().toISOString().split('T')[0]
     };
-    if (p.cliente && await fastSave('contatti', p)) {
+    if (!p.cliente) {
+        alert("Il nome del cliente è obbligatorio!");
+        return;
+    }
+    if (p.valore < 0 || p.ore_previste < 0) {
+        alert("I valori di Preventivo e Ore Previste devono essere positivi.");
+        return;
+    }
+    if (await fastSave('contatti', p)) {
         document.getElementById('c-cliente').value = '';
         renderC();
     }
@@ -193,14 +200,22 @@ window.saveP = async () => {
         operatore: document.getElementById('p-operatore').value,
         data: new Date().toISOString().split('T')[0]
     };
-    if (p.contatto_id && await fastSave('produzione', p)) {
+    if (p.ore_lavorate <= 0) {
+        alert("Le ore lavorate devono essere positive.");
+        return;
+    }
+    if (await fastSave('produzione', p)) {
         document.getElementById('p-ore').value = '';
         renderP();
     }
 };
 
 async function renderC() {
-    const { data } = await sb.from('contatti').select('*').order('id', {ascending: false}).limit(20);
+    const { data, error } = await sb.from('contatti').select('*').order('id', {ascending: false}).limit(20);
+    if (error) {
+        alert("Errore nel caricamento dei contatti: " + error.message);
+        return;
+    }
     const tbody = document.getElementById('tbody-c');
     tbody.innerHTML = (data || []).map(r => `<tr><td>${r.cliente}</td><td>${r.tipo_lavoro}</td><td>${r.stato || 'OK'}</td></tr>`).join('');
     
@@ -209,7 +224,11 @@ async function renderC() {
 }
 
 async function renderP() {
-    const { data } = await sb.from('produzione').select('*, contatti(cliente)').order('id', {ascending: false}).limit(20);
+    const { data, error } = await sb.from('produzione').select('*, contatti(cliente)').order('id', {ascending: false}).limit(20);
+    if (error) {
+        alert("Errore nel caricamento della produzione: " + error.message);
+        return;
+    }
     document.getElementById('tbody-p').innerHTML = (data || []).map(r => `
         <tr><td>${r.data}</td><td>${r.contatti?.cliente || '???'}</td><td>${r.prodotto}</td><td>${r.ore_lavorate}</td></tr>
     `).join('');
